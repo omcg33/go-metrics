@@ -16,7 +16,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(`POST /{type}/{name}/{value}`, controller.CreateOrUpdateMetric)
+	mux.HandleFunc(`POST /update/{type}/{name}/{value}`, controller.CreateOrUpdateMetric)
 	mux.HandleFunc(`GET /metrics`, controller.GetMetrics)
 
 	fmt.Printf("Server listening on http://localhost:8080\n")
