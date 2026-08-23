@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"math/rand"
 	"runtime"
 );
@@ -126,6 +127,8 @@ func (c *RuntimeCollector) Collect() {
 
 	runtime.ReadMemStats(&m)
 	
+	fmt.Println("Collecting metrics")
+
 	for name, reader := range c.gaugeReaders {
 		c.gauges[name] = reader(m)
 	}
@@ -136,6 +139,7 @@ func (c *RuntimeCollector) Collect() {
 }
 
 func (c *RuntimeCollector) Report() Report {
+	fmt.Println("Report created")
 	return Report{
 		gauges: c.gauges,
 		counters: c.counters,

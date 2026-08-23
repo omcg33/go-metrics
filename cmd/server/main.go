@@ -21,7 +21,7 @@ func main() {
 
 	fmt.Printf("Server listening on http://localhost:8080\n")
 
-	err := http.ListenAndServe(`:8080`, mux)
+	err := http.ListenAndServe(`:8080`, handler.Logging(mux))
 	if err != nil {
 		fmt.Printf("Server failed\n")
 		panic(err)

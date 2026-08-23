@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/omcg33/go-metrics/internal/agent"
@@ -16,22 +15,18 @@ func main() {
 	pollTicker := time.NewTicker(pollInterval)
 	reportTicker := time.NewTicker(reportInterval)
 	collector := agent.NewRuntimeCollector()
+	service := agent.NewService()
+
 	defer pollTicker.Stop()
 	defer reportTicker.Stop()
 
-
 	for {
-	select {
-	case <-pollTicker.C:
-		collector.Collect()
-	case <-reportTicker.C:
-		report := collector.Report()
-		fmt.Println(report)
+		select {
+			case <-pollTicker.C:
+				collector.Collect()
+			case <-reportTicker.C:
+				report := collector.Report()
+				service.Report(report)
+		}
 	}
-}
-
-	
-	
-	
-	
 }
