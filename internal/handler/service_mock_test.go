@@ -1,0 +1,26 @@
+package handler
+
+import (
+	"github.com/omcg33/go-metrics/internal/service"
+	"github.com/stretchr/testify/mock"
+)
+
+var _ service.Service = (*serviceMock)(nil)
+
+type serviceMock struct {
+	mock.Mock
+}
+
+func (m *serviceMock) CreateOrUpdateGauge(name string, value float64) {
+	m.Called(name, value)
+}
+
+func (m *serviceMock) CreateOrUpdateCounter(name string, value int64) {
+	m.Called(name, value)
+}
+
+func (m *serviceMock) Metrics() map[string]interface{} {
+	args := m.Called()
+	result, _ := args.Get(0).(map[string]interface{})
+	return result
+}
