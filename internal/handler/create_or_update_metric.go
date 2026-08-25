@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -11,25 +10,15 @@ import (
 	models "github.com/omcg33/go-metrics/internal/model"
 )
 
-type MetricType string
-
-type Params struct {
-	Type MetricType `validate:"required,metric_type"`
+type CreateOrUpdateMetricParams struct {
+	Type string     `validate:"required,metric_type"`
 	Name string     `validate:"required"`
-	Value string     `validate:"required"`
-}
-
-var validate = newValidate()
-
-func newValidate() *validator.Validate {
-	v := validator.New()
-	v.RegisterAlias("metric_type", fmt.Sprintf("oneof=%s %s", models.Gauge, models.Counter))
-	return v
+	Value string    `validate:"required"`
 }
 
 func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req *http.Request) {
-	params := Params{
-		Type: MetricType(req.PathValue("type")),
+	params := CreateOrUpdateMetricParams{
+		Type: req.PathValue("type"),
 		Name: req.PathValue("name"),
 		Value: req.PathValue("value"),
 	}

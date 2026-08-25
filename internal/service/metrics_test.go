@@ -55,3 +55,39 @@ func TestMetrics_Counters(t *testing.T) {
 
 	assert.Equal(t, counters, got["counters"])
 }
+
+func TestGauge(t *testing.T) {
+	repo := &storageMock{}
+	repo.On("Gauges").Return(map[string]float64{"Alloc": 1.5})
+
+	got, ok := NewService(repo).Gauge("Alloc")
+
+	assert.Equal(t, []any{1.5, true}, []any{got, ok})
+}
+
+func TestGauge_NotFound(t *testing.T) {
+	repo := &storageMock{}
+	repo.On("Gauges").Return(map[string]float64{})
+
+	_, ok := NewService(repo).Gauge("Alloc")
+
+	assert.False(t, ok)
+}
+
+func TestCounter(t *testing.T) {
+	repo := &storageMock{}
+	repo.On("Counters").Return(map[string]int64{"PollCount": 10})
+
+	got, ok := NewService(repo).Counter("PollCount")
+
+	assert.Equal(t, []any{int64(10), true}, []any{got, ok})
+}
+
+func TestCounter_NotFound(t *testing.T) {
+	repo := &storageMock{}
+	repo.On("Counters").Return(map[string]int64{})
+
+	_, ok := NewService(repo).Counter("PollCount")
+
+	assert.False(t, ok)
+}
