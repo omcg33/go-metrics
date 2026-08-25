@@ -9,8 +9,13 @@ import (
 	models "github.com/omcg33/go-metrics/internal/model"
 )
 
+type GetMetricParams struct {
+	Type string `validate:"required,metric_type"`
+	Name string `validate:"required"`
+}
+
 func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Request) {
-	params := CreateOrUpdateMetricParams{
+	params := GetMetricParams{
 		Type: req.PathValue("type"),
 		Name: req.PathValue("name"),
 	}
@@ -30,26 +35,28 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 			return
 		}
 	}
- 
-	switch params.Type {
-		case models.Gauge: 
-			value, isExist := controller.service.Gauge(params.Name);
-			if (!isExist) {
-				http.Error(res, "metric name by name " + params.Name + "not found", http.StatusNotFound)
-			}
 
-			res.Write([]byte(fmt.Sprintf("%f", value)))
-		case models.Counter:
-			value, isExist := controller.service.Counter(params.Name)
-			if (!isExist) {
-				http.Error(res, "metric name by name " + params.Name + "not found", http.StatusNotFound)
-			}
-			
-			res.Write([]byte(fmt.Sprintf("%d", value)))
-		default:
-			http.Error(res, "invalid metric type", http.StatusBadRequest)
+	switch params.Type {
+	case models.Gauge:
+		value, isExist := controller.service.Gauge(params.Name)
+		if !isExist {
+			http.Error(res, "metric name by name "+params.Name+"not found", http.StatusNotFound)
 			return
+		}
+
+		res.Write([]byte(fmt.Sprintf("%f", value)))
+	case models.Counter:
+		value, isExist := controller.service.Counter(params.Name)
+		if !isExist {
+			http.Error(res, "metric name by name "+params.Name+"not found", http.StatusNotFound)
+			return
+		}
+
+		res.Write([]byte(fmt.Sprintf("%d", value)))
+	default:
+		http.Error(res, "invalid metric type", http.StatusBadRequest)
+		return
 	}
-	
+
 	res.WriteHeader(http.StatusOK)
 }
