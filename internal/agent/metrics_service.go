@@ -2,40 +2,55 @@ package agent
 
 import (
 	"fmt"
-	"net/http"
+	"strconv"
+
+	"resty.dev/v3"
 )
 
 var _ Service = (*MetricsService)(nil)
 
 type MetricsService struct {
-	baseUrl string;
-	client *http.Client;
+	client *resty.Client;
 }
 
 func NewService() *MetricsService {
 	return &MetricsService{
-		baseUrl: "http://localhost:8080",
-		client: &http.Client{},
+		client: resty.New().SetBaseURL("http://localhost:8080"),
 	}
 }
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		fmt.Printf("Send POST to %s/update/gauge/%s/%f\n", service.baseUrl, name, value)
-		_, err := service.client.Post(fmt.Sprintf("%s/update/gauge/%s/%f", service.baseUrl, name, value), "text/plain", nil)
+		fmt.Printf("Send POST to /update/gauge/%s/%f\n", name, value)
+
+		_, err := service.client.R().
+			SetPathParams(map[string]string{
+				"name": name,
+				"value": strconv.FormatFloat(value, 'f', 6, 64),
+			}).
+			SetHeader("Content-Type", "text/plain").
+			Post("/update/gauge/{name}/{value}")
 
 		if(err != nil) {
-			fmt.Errorf("Failed POST to %s/update/gauge/%s/%f with %w", service.baseUrl, name, value, err)
+			fmt.Errorf("Failed POST to /update/gauge/%s/%f with %w", name, value, err)
 			panic(err)
 		}
 	}
 	
 	for name, value := range report.counters {
-		fmt.Printf("Send POST to %s/update/counter/%s/%d\n", service.baseUrl, name, value)
-		_, err := service.client.Post(fmt.Sprintf("%s/update/counter/%s/%d", service.baseUrl, name, value), "text/plain", nil)
+
+		fmt.Printf("Send POST to /update/counter/%s/%d\n", name, value)
+
+		_, err := service.client.R().
+			SetPathParams(map[string]string{
+				"name": name,
+				"value": strconv.FormatInt(value, 10),
+			}).
+			SetHeader("Content-Type", "text/plain").
+			Post("/update/counter/{name}/{value}")
 
 		if(err != nil) {
-			fmt.Errorf("Failed POST to %s/update/counter/%s/%d with %w", service.baseUrl, name, value, err)
+			fmt.Errorf("Failed POST to /update/counter/%s/%d with %w",  name, value, err)
 			panic(err)
 		}
 	}

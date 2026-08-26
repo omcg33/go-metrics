@@ -4,14 +4,24 @@ import (
 	"github.com/omcg33/go-metrics/internal/repository"
 )
 
-var _ Service = (*MetricsService)(nil)
+var _ TMetricsService = (*MetricsService)(nil)
 
 type MetricsService struct {
-	repository repository.Storage
+	repository repository.TStorage
 }
 
-func NewService(repository repository.Storage) *MetricsService {
+func NewService(repository repository.TStorage) *MetricsService {
 	return &MetricsService{repository: repository}
+}
+
+func (s *MetricsService) Gauge(name string) (float64, bool) {
+	value, ok := s.repository.Gauges()[name]
+	return value, ok
+}
+
+func (s *MetricsService) Counter(name string) (int64, bool) {
+	value, ok := s.repository.Counters()[name]
+	return value, ok
 }
 
 func (s *MetricsService) CreateOrUpdateGauge(name string, value float64) {

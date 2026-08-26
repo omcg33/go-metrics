@@ -60,7 +60,7 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	s := NewService()
-	s.baseUrl = srv.URL
+	s.client.SetBaseURL(srv.URL)
 	s.Report(Report{})
 
 	assert.Equal(t, 0, n)
@@ -68,7 +68,7 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 
 func TestReport_PanicsWhenGaugePostFails(t *testing.T) {
 	s := NewService()
-	s.baseUrl ="http://localhost:8080"
+	s.client.SetBaseURL(closedServerURL(t))
 
 	assert.Panics(t, func() {
 		s.Report(Report{gauges: map[string]float64{"Alloc": 1}})
@@ -77,7 +77,7 @@ func TestReport_PanicsWhenGaugePostFails(t *testing.T) {
 
 func TestReport_PanicsWhenCounterPostFails(t *testing.T) {
 	s := NewService()
-	s.baseUrl ="http://localhost:8080"
+	s.client.SetBaseURL(closedServerURL(t))
 
 	assert.Panics(t, func() {
 		s.Report(Report{counters: map[string]int64{"PollCount": 1}})
@@ -94,8 +94,18 @@ func reportAndCapture(t *testing.T, report Report) *http.Request {
 	t.Cleanup(srv.Close)
 
 	s := NewService()
-	s.baseUrl = srv.URL
+	s.client.SetBaseURL(srv.URL)
 	s.Report(report)
 
 	return got
+}
+
+func closedServerURL(t *testing.T) string {
+	t.Helper()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	url := srv.URL
+	srv.Close()
+
+	return url
 }

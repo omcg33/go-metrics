@@ -1,7 +1,7 @@
 package repository
 
-// Storage описывает операции с хранилищем метрик.
-type Storage interface {
+// TStorage описывает операции с хранилищем метрик.
+type TStorage interface {
 	UpdateGauge(name string, value float64)
 	UpdateCounter(name string, delta int64)
 	Gauges() (map[string]float64 )

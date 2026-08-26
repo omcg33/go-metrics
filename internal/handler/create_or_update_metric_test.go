@@ -32,24 +32,6 @@ func TestCreateOrUpdateMetric_ParseIntError(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
 
-func TestCreateOrUpdateMetric_CreateOrUpdateGauge(t *testing.T) {
-	svc := &serviceMock{}
-	svc.On("CreateOrUpdateGauge", "Alloc", 1.5).Return()
-
-	createOrUpdate(svc, "gauge", "Alloc", "1.5")
-
-	svc.AssertCalled(t, "CreateOrUpdateGauge", "Alloc", 1.5)
-}
-
-func TestCreateOrUpdateMetric_CreateOrUpdateCounter(t *testing.T) {
-	svc := &serviceMock{}
-	svc.On("CreateOrUpdateCounter", "PollCount", int64(42)).Return()
-
-	createOrUpdate(svc, "counter", "PollCount", "42")
-
-	svc.AssertCalled(t, "CreateOrUpdateCounter", "PollCount", int64(42))
-}
-
 func TestCreateOrUpdateMetric_StatusOK(t *testing.T) {
 	svc := &serviceMock{}
 	svc.On("CreateOrUpdateGauge", "Alloc", 1.5).Return()

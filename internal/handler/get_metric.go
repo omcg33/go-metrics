@@ -6,31 +6,27 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
-
 	models "github.com/omcg33/go-metrics/internal/model"
 )
 
-type CreateOrUpdateMetricParams struct {
-	Type string     `validate:"required,metric_type"`
-	Name string     `validate:"required"`
-	Value string    `validate:"required"`
+type GetMetricParams struct {
+	Type string `validate:"required,metric_type"`
+	Name string `validate:"required"`
 }
 
-func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req *http.Request) {
-	params := CreateOrUpdateMetricParams{
+func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Request) {
+	params := GetMetricParams{
 		Type: req.PathValue("type"),
 		Name: req.PathValue("name"),
-		Value: req.PathValue("value"),
 	}
 
 	if err := validate.Struct(params); err != nil {
-
 		var validationErrors validator.ValidationErrors
 
 		if errors.As(err, &validationErrors) {
 			for _, fieldErr := range validationErrors {
 				switch fieldErr.Field() {
-				case "Type", "Value":
+				case "Type":
 					http.Error(res, "invalid metric type", http.StatusBadRequest)
 				case "Name":
 					http.Error(res, "metric name is required", http.StatusNotFound)
@@ -42,24 +38,25 @@ func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req 
 
 	switch params.Type {
 	case models.Gauge:
-		value, err := strconv.ParseFloat(params.Value, 64)
-		if err != nil {
-			http.Error(res, "invalid metric value", http.StatusBadRequest)
+		value, isExist := controller.service.Gauge(params.Name)
+		if !isExist {
+			http.Error(res, "metric name by name "+params.Name+" not found", http.StatusNotFound)
 			return
 		}
-		controller.service.CreateOrUpdateGauge(params.Name, value)
+
+		res.Write([]byte(strconv.FormatFloat(value, 'f', -1, 64)))
 	case models.Counter:
-		value, err := strconv.ParseInt(params.Value, 10, 64)
-		if err != nil {
-			http.Error(res, "invalid metric value", http.StatusBadRequest)
+		value, isExist := controller.service.Counter(params.Name)
+		if !isExist {
+			http.Error(res, "metric name by name "+params.Name+"not found", http.StatusNotFound)
 			return
 		}
-		controller.service.CreateOrUpdateCounter(params.Name, value)
+
+		res.Write([]byte(strconv.FormatInt(value, 10)))
 	default:
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
 	}
-
 
 	res.WriteHeader(http.StatusOK)
 }
