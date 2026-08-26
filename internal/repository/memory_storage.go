@@ -1,6 +1,6 @@
 package repository
 
-var _ Storage = (*MemStorage)(nil)
+var _ TStorage = (*MemStorage)(nil)
 
 type MemStorage struct {
 	gauges   map[string]float64

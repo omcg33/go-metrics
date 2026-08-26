@@ -40,7 +40,7 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 	case models.Gauge:
 		value, isExist := controller.service.Gauge(params.Name)
 		if !isExist {
-			http.Error(res, "metric name by name "+params.Name+"not found", http.StatusNotFound)
+			http.Error(res, "metric name by name "+params.Name+" not found", http.StatusNotFound)
 			return
 		}
 

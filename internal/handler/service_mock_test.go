@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ service.Service = (*serviceMock)(nil)
+var _ service.TMetricsService = (*serviceMock)(nil)
 
 type serviceMock struct {
 	mock.Mock

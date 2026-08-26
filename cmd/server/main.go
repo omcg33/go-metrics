@@ -24,7 +24,7 @@ func main() {
 
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
-	router.Get("/metrics", controller.GetMetrics)
+	router.Get("/", controller.GetMetrics)
 
 	fmt.Printf("Server listening on http://localhost:8080\n")
 
