@@ -27,6 +27,17 @@ func TestGetMetric_GaugeStatusOK(t *testing.T) {
 	rr := getMetric(svc, "gauge", "Alloc")
 
 	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "1.5", rr.Body.String())
+}
+
+func TestGetMetric_GaugeOmitsTrailingZeros(t *testing.T) {
+	svc := &serviceMock{}
+	svc.On("Gauge", "testSetGet216").Return(65024.953, true)
+
+	rr := getMetric(svc, "gauge", "testSetGet216")
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "65024.953", rr.Body.String())
 }
 
 func TestGetMetric_CounterStatusOK(t *testing.T) {

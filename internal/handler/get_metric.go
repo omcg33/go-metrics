@@ -2,8 +2,8 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	models "github.com/omcg33/go-metrics/internal/model"
@@ -44,7 +44,7 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 			return
 		}
 
-		res.Write([]byte(fmt.Sprintf("%f", value)))
+		res.Write([]byte(strconv.FormatFloat(value, 'f', -1, 64)))
 	case models.Counter:
 		value, isExist := controller.service.Counter(params.Name)
 		if !isExist {
@@ -52,7 +52,7 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 			return
 		}
 
-		res.Write([]byte(fmt.Sprintf("%d", value)))
+		res.Write([]byte(strconv.FormatInt(value, 10)))
 	default:
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
