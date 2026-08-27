@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"resty.dev/v3"
 )
@@ -13,9 +14,13 @@ type MetricsService struct {
 	client *resty.Client;
 }
 
-func NewService() *MetricsService {
+func NewService(serverAddress string) *MetricsService {
+	if !strings.Contains(serverAddress, "://") {
+    	serverAddress = "http://" + serverAddress
+}
+
 	return &MetricsService{
-		client: resty.New().SetBaseURL("http://localhost:8080"),
+		client: resty.New().SetBaseURL(serverAddress),
 	}
 }
 
