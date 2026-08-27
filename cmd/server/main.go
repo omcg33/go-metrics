@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -12,7 +13,17 @@ import (
 	"github.com/omcg33/go-metrics/internal/service"
 )
 
+var (
+    serverAddress *string
+)
+
+func init() {
+  serverAddress = flag.String("a", "localhost:8080", "server address")
+}
+
 func main() {
+	flag.Parse();
+
 	storage := repository.NewMemStorage()
 	svc := service.NewService(storage)
 	controller := handler.NewController(svc)
@@ -26,9 +37,9 @@ func main() {
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	fmt.Printf("Server listening on http://localhost:8080\n")
+	fmt.Printf("Server listening on http://%s\n", *serverAddress)
 
-	err := http.ListenAndServe(`:8080`, router)
+	err := http.ListenAndServe(*serverAddress, router)
 	if err != nil {
 		fmt.Printf("Server failed\n")
 		panic(err)
