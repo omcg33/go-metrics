@@ -8,7 +8,7 @@ import (
 	"resty.dev/v3"
 )
 
-var _ Service = (*MetricsService)(nil)
+var _ TService = (*MetricsService)(nil)
 
 type MetricsService struct {
 	client *resty.Client;

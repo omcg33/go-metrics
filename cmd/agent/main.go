@@ -1,32 +1,18 @@
 package main
 
 import (
-	"flag"
 	"time"
 
 	"github.com/omcg33/go-metrics/internal/agent"
 )
 
-var (
-	serverAddress *string
-	reportInterval *int
-	pollInterval *int
-)
-
-func init() {
-  serverAddress = flag.String("a", "localhost:8080", "Адрес сервера")
-  reportInterval = flag.Int("r", 10 , "Частота отправки метрик на сервер")
-  pollInterval = flag.Int("p", 2 , "Частота опроса метрик из пакета ")
-}
-
-
 func main() {
-	flag.Parse();
+	config := agent.NewConfig();
 
-	reportTicker := time.NewTicker(time.Duration(*reportInterval) * time.Second)
-	pollTicker := time.NewTicker(time.Duration(*pollInterval) * time.Second)
+	reportTicker := time.NewTicker(time.Duration(*config.ReportInterval) * time.Second)
+	pollTicker := time.NewTicker(time.Duration(*config.PollInterval) * time.Second)
 	collector := agent.NewRuntimeCollector()
-	service := agent.NewService(*serverAddress)
+	service := agent.NewService(*config.ServerAddress)
 
 	defer pollTicker.Stop()
 	defer reportTicker.Stop()
