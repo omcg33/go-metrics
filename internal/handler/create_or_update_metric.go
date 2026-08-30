@@ -23,7 +23,7 @@ func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req 
 		Value: req.PathValue("value"),
 	}
 
-	if err := validate.Struct(params); err != nil {
+	if err := controller.validator.Struct(params); err != nil {
 
 		var validationErrors validator.ValidationErrors
 

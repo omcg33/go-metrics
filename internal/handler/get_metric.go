@@ -20,7 +20,7 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 		Name: req.PathValue("name"),
 	}
 
-	if err := validate.Struct(params); err != nil {
+	if err := controller.validator.Struct(params); err != nil {
 		var validationErrors validator.ValidationErrors
 
 		if errors.As(err, &validationErrors) {
