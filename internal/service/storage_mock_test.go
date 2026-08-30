@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ repository.TStorage = (*storageMock)(nil)
+var _ repository.Storage = (*storageMock)(nil)
 
 type storageMock struct {
 	mock.Mock

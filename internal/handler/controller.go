@@ -1,12 +1,11 @@
 package handler
 
-import metrics "github.com/omcg33/go-metrics/internal/service"
 
 type Controller struct {
-	service metrics.TMetricsService
+	service MetricsService
 }
 
-func NewController(service metrics.TMetricsService) *Controller {
+func NewController(service MetricsService) *Controller {
 	return &Controller{
 		service: service,
 	}

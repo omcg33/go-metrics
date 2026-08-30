@@ -1,11 +1,8 @@
 package handler
 
 import (
-	"github.com/omcg33/go-metrics/internal/service"
 	"github.com/stretchr/testify/mock"
 )
-
-var _ service.TMetricsService = (*serviceMock)(nil)
 
 type serviceMock struct {
 	mock.Mock

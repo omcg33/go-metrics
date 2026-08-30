@@ -1,6 +1,6 @@
 package agent
 
-type TService interface {
+type Service interface {
 	Report(Report)
 }
 
@@ -9,7 +9,7 @@ type Report struct {
 	counters map[string]int64
 }
 
-type TCollector interface {
+type Collector interface {
 	Collect()
 	Report() Report
 }

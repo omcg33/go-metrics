@@ -6,7 +6,7 @@ import (
 	"runtime"
 );
 
-var _ TCollector = (*RuntimeCollector)(nil)
+var _ Collector = (*RuntimeCollector)(nil)
 
 type GaugeReader func(ms runtime.MemStats) float64
 type CounterReader func() int64
