@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -29,11 +29,11 @@ func main() {
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	fmt.Printf("Server listening on http://%s\n", *config.ServerAddress)
+	log.Printf("Server listening on http://%s\n", *config.ServerAddress)
 
 	err := http.ListenAndServe(*config.ServerAddress, router)
 	if err != nil {
-		fmt.Printf("Server failed\n")
+		log.Printf("Server failed\n")
 		panic(err)
 	}
 }

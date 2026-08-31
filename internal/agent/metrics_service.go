@@ -1,7 +1,7 @@
 package agent
 
 import (
-	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -26,7 +26,7 @@ func NewService(serverAddress string) *MetricsService {
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		fmt.Printf("Send POST to /update/gauge/%s/%f\n", name, value)
+		log.Printf("Send POST to /update/gauge/%s/%f\n", name, value)
 
 		_, err := service.client.R().
 			SetPathParams(map[string]string{
@@ -37,14 +37,14 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/gauge/{name}/{value}")
 
 		if(err != nil) {
-			fmt.Errorf("Failed POST to /update/gauge/%s/%f with %w", name, value, err)
+			log.Printf("Failed POST to /update/gauge/%s/%f with %w", name, value, err)
 			panic(err)
 		}
 	}
 	
 	for name, value := range report.counters {
 
-		fmt.Printf("Send POST to /update/counter/%s/%d\n", name, value)
+		log.Printf("Send POST to /update/counter/%s/%d\n", name, value)
 
 		_, err := service.client.R().
 			SetPathParams(map[string]string{
@@ -55,7 +55,7 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/counter/{name}/{value}")
 
 		if(err != nil) {
-			fmt.Errorf("Failed POST to /update/counter/%s/%d with %w",  name, value, err)
+			log.Printf("Failed POST to /update/counter/%s/%d with %w",  name, value, err)
 			panic(err)
 		}
 	}

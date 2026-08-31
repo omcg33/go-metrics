@@ -1,0 +1,16 @@
+dir: "{{.InterfaceDir}}"
+filename: "mock_{{.InterfaceName}}.go"
+formatter: goimports
+pkgname: "{{.SrcPackageName}}"
+structname: "{{.Mock}}{{.InterfaceName}}"
+template: testify
+template-data:
+  unroll-variadic: true
+packages:
+  github.com/omcg33/go-metrics:
+    config:
+      all: true
+      recursive: true
+      exclude-subpkg-regex:
+        - internal/repository
+        - internal/agent
