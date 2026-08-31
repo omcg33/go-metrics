@@ -26,7 +26,7 @@ func NewService(serverAddress string) *MetricsService {
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		log.Printf("Send POST to /update/gauge/%s/%f\n", name, value)
+		log.Printf("Send POST to /update/gauge/%s/%f", name, value)
 
 		_, err := service.client.R().
 			SetPathParams(map[string]string{
@@ -44,7 +44,7 @@ func (service *MetricsService) Report(report Report) {
 	
 	for name, value := range report.counters {
 
-		log.Printf("Send POST to /update/counter/%s/%d\n", name, value)
+		log.Printf("Send POST to /update/counter/%s/%d", name, value)
 
 		_, err := service.client.R().
 			SetPathParams(map[string]string{

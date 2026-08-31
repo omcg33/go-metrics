@@ -1,5 +1,5 @@
 dir: "{{.InterfaceDir}}"
-filename: "mock_{{.InterfaceName}}.go"
+filename: "{{.InterfaceName | snakecase}}.gen.go"
 formatter: goimports
 pkgname: "{{.SrcPackageName}}"
 structname: "{{.Mock}}{{.InterfaceName}}"

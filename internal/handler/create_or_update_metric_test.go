@@ -34,7 +34,7 @@ func TestCreateOrUpdateMetric_ParseIntError(t *testing.T) {
 
 func TestCreateOrUpdateMetric_StatusOK(t *testing.T) {
 	svc := NewMockMetricsService(t)
-	svc.On("CreateOrUpdateGauge", "Alloc", 1.5).Return()
+	svc.EXPECT().CreateOrUpdateGauge("Alloc", 1.5)
 
 	rr := createOrUpdate(svc, "gauge", "Alloc", "1.5")
 

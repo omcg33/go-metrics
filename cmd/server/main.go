@@ -29,11 +29,11 @@ func main() {
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	log.Printf("Server listening on http://%s\n", *config.ServerAddress)
+	log.Printf("Server listening on http://%s", *config.ServerAddress)
 
 	err := http.ListenAndServe(*config.ServerAddress, router)
 	if err != nil {
-		log.Printf("Server failed\n")
+		log.Println("Server failed")
 		panic(err)
 	}
 }
