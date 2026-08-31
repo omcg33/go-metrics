@@ -37,7 +37,7 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/gauge/{name}/{value}")
 
 		if(err != nil) {
-			log.Printf("Failed POST to /update/gauge/%s/%f with %w", name, value, err)
+			log.Printf("Failed POST to /update/gauge/%s/%f with %v", name, value, err)
 			panic(err)
 		}
 	}
@@ -55,7 +55,7 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/counter/{name}/{value}")
 
 		if(err != nil) {
-			log.Printf("Failed POST to /update/counter/%s/%d with %w",  name, value, err)
+			log.Printf("Failed POST to /update/counter/%s/%d with %v", name, value, err)
 			panic(err)
 		}
 	}
