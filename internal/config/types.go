@@ -1,6 +1,5 @@
 package config
 
-
 type Config struct {
-    ServerAddress *string
+	ServerAddress string `env:"SERVER_ADDRESS"`
 }

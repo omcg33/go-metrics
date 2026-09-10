@@ -13,9 +13,8 @@ import (
 	"github.com/omcg33/go-metrics/internal/service"
 )
 
-
 func main() {
-	config := config.NewConfig();
+	config := config.NewConfig()
 	storage := repository.NewMemStorage()
 	svc := service.NewService(storage)
 	controller := handler.NewController(svc)
@@ -29,9 +28,9 @@ func main() {
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	log.Printf("Server listening on http://%s", *config.ServerAddress)
+	log.Printf("Server listening on http://%s", config.ServerAddress)
 
-	err := http.ListenAndServe(*config.ServerAddress, router)
+	err := http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {
 		log.Println("Server failed")
 		panic(err)
