@@ -7,23 +7,23 @@ import (
 )
 
 func main() {
-	config := agent.NewConfig();
+	config := agent.NewConfig()
 
-	reportTicker := time.NewTicker(time.Duration(*config.ReportInterval) * time.Second)
-	pollTicker := time.NewTicker(time.Duration(*config.PollInterval) * time.Second)
+	reportTicker := time.NewTicker(time.Duration(config.ReportInterval) * time.Second)
+	pollTicker := time.NewTicker(time.Duration(config.PollInterval) * time.Second)
 	collector := agent.NewRuntimeCollector()
-	service := agent.NewService(*config.ServerAddress)
+	service := agent.NewService(config.ServerAddress)
 
 	defer pollTicker.Stop()
 	defer reportTicker.Stop()
 
 	for {
 		select {
-			case <-pollTicker.C:
-				collector.Collect()
-			case <-reportTicker.C:
-				report := collector.Report()
-				service.Report(report)
+		case <-pollTicker.C:
+			collector.Collect()
+		case <-reportTicker.C:
+			report := collector.Report()
+			service.Report(report)
 		}
 	}
 }
