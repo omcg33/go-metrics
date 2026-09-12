@@ -36,6 +36,10 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode // захватываем код статуса
 }
 
+func (r *loggingResponseWriter) Unwrap() http.ResponseWriter {
+	return r.ResponseWriter
+}
+
 func Logger(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
