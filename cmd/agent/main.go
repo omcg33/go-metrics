@@ -18,6 +18,8 @@ func main() {
 	defer reportTicker.Stop()
 	defer service.Close()
 
+	collector.Collect()
+
 	for {
 		select {
 		case <-pollTicker.C:
