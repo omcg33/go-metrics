@@ -85,20 +85,20 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 	assert.Equal(t, 0, n)
 }
 
-func TestReport_PanicsWhenGaugePostFails(t *testing.T) {
+func TestReport_DoesNotPanicWhenGaugePostFails(t *testing.T) {
 	s := NewService(closedServerURL(t))
 	t.Cleanup(func() { _ = s.Close() })
 
-	assert.Panics(t, func() {
+	assert.NotPanics(t, func() {
 		s.Report(Report{gauges: map[string]float64{"Alloc": 1}})
 	})
 }
 
-func TestReport_PanicsWhenCounterPostFails(t *testing.T) {
+func TestReport_DoesNotPanicWhenCounterPostFails(t *testing.T) {
 	s := NewService(closedServerURL(t))
 	t.Cleanup(func() { _ = s.Close() })
 
-	assert.Panics(t, func() {
+	assert.NotPanics(t, func() {
 		s.Report(Report{counters: map[string]int64{"PollCount": 1}})
 	})
 }

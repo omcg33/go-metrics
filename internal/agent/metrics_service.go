@@ -20,7 +20,9 @@ func NewService(serverAddress string) *MetricsService {
 	}
 
 	return &MetricsService{
-		client: resty.New().SetBaseURL(serverAddress),
+		client: resty.New().
+			SetBaseURL(serverAddress).
+			SetCloseConnection(true),
 	}
 }
 
@@ -44,7 +46,7 @@ func (service *MetricsService) Report(report Report) {
 
 		if err != nil {
 			log.Printf("Failed Gauge metric %s === %f POST to /update  with %v", name, value, err)
-			panic(err)
+			continue
 		}
 	}
 
@@ -64,7 +66,7 @@ func (service *MetricsService) Report(report Report) {
 
 		if err != nil {
 			log.Printf("Failed Counter metric %s === %d POST to /update with %v", name, value, err)
-			panic(err)
+			continue
 		}
 	}
 }
