@@ -13,7 +13,7 @@ func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req 
 	metricName := req.PathValue("name")
 	metricValue := req.PathValue("value")
 
-	if metricType != "gauge" || metricType != "counter" {
+	if metricType != "gauge" && metricType != "counter" {
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 	}
 

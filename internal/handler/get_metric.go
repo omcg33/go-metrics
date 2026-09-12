@@ -16,7 +16,7 @@ func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Reque
 	metricType := req.PathValue("type")
 	metricName := req.PathValue("name")
 
-	if metricType != "gauge" || metricType != "counter" {
+	if metricType != "gauge" && metricType != "counter" {
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 	}
 
