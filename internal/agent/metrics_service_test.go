@@ -32,7 +32,7 @@ func TestReport_GaugeMethod(t *testing.T) {
 func TestReport_GaugePath(t *testing.T) {
 	req := reportAndCapture(t, Report{gauges: map[string]float64{"Alloc": 1.5}})
 
-	assert.Equal(t, "/update", req.Path)
+	assert.Equal(t, "/update/", req.Path)
 }
 
 func TestReport_GaugeContentType(t *testing.T) {
@@ -56,7 +56,7 @@ func TestReport_CounterMethod(t *testing.T) {
 func TestReport_CounterPath(t *testing.T) {
 	req := reportAndCapture(t, Report{counters: map[string]int64{"PollCount": 42}})
 
-	assert.Equal(t, "/update", req.Path)
+	assert.Equal(t, "/update/", req.Path)
 }
 
 func TestReport_CounterContentType(t *testing.T) {

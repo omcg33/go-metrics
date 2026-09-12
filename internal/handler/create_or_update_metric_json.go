@@ -36,13 +36,29 @@ func (controller *Controller) CreateOrUpdateMetricJSON(res http.ResponseWriter, 
 
 	switch data.MType {
 	case models.Gauge:
+		if data.Value == nil {
+			http.Error(res, "metric value is required", http.StatusBadRequest)
+			return
+		}
 		controller.service.CreateOrUpdateGauge(data.ID, *data.Value)
 	case models.Counter:
+		if data.Delta == nil {
+			http.Error(res, "metric delta is required", http.StatusBadRequest)
+			return
+		}
 		controller.service.CreateOrUpdateCounter(data.ID, *data.Delta)
 	default:
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	res.WriteHeader(http.StatusOK)
+	res.Write(jsonData)
 }

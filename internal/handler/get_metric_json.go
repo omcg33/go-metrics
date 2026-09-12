@@ -54,6 +54,8 @@ func (controller *Controller) GetMetricJSON(res http.ResponseWriter, req *http.R
 			return
 		}
 
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
 		res.Write(jsonData)
 	case models.Counter:
 		value, isExist := controller.service.Counter(data.ID)
@@ -74,11 +76,11 @@ func (controller *Controller) GetMetricJSON(res http.ResponseWriter, req *http.R
 			return
 		}
 
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
 		res.Write(jsonData)
 	default:
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
 	}
-
-	res.WriteHeader(http.StatusOK)
 }

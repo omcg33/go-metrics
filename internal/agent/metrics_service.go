@@ -32,14 +32,15 @@ func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
 		log.Printf("Send Gauge metric %s === %f POST to /update", name, value)
 
+		gaugeValue := value
 		_, err := service.client.R().
 			SetBody(models.Metrics{
 				ID:    name,
 				MType: models.Gauge,
-				Value: &value,
+				Value: &gaugeValue,
 			}).
 			SetHeader("Content-Type", "application/json").
-			Post("/update")
+			Post("/update/")
 
 		if err != nil {
 			log.Printf("Failed Gauge metric %s === %f POST to /update  with %v", name, value, err)
@@ -51,14 +52,15 @@ func (service *MetricsService) Report(report Report) {
 
 		log.Printf("Send Counter metric %s === %d POST to /update", name, value)
 
+		counterValue := value
 		_, err := service.client.R().
 			SetBody(models.Metrics{
 				ID:    name,
 				MType: models.Counter,
-				Delta: &value,
+				Delta: &counterValue,
 			}).
 			SetHeader("Content-Type", "application/json").
-			Post("/update")
+			Post("/update/")
 
 		if err != nil {
 			log.Printf("Failed Counter metric %s === %d POST to /update with %v", name, value, err)

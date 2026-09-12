@@ -30,6 +30,7 @@ func main() {
 
 	router.Use(middleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
+	router.Use(chiMiddleware.StripSlashes)
 
 	router.Post("/value", controller.GetMetricJSON)
 	router.Post("/update", controller.CreateOrUpdateMetricJSON)
