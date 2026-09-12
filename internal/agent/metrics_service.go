@@ -2,22 +2,22 @@ package agent
 
 import (
 	"log"
-	"strconv"
 	"strings"
 
+	models "github.com/omcg33/go-metrics/internal/model"
 	"resty.dev/v3"
 )
 
 var _ Service = (*MetricsService)(nil)
 
 type MetricsService struct {
-	client *resty.Client;
+	client *resty.Client
 }
 
 func NewService(serverAddress string) *MetricsService {
 	if !strings.Contains(serverAddress, "://") {
-    	serverAddress = "http://" + serverAddress
-}
+		serverAddress = "http://" + serverAddress
+	}
 
 	return &MetricsService{
 		client: resty.New().SetBaseURL(serverAddress),
@@ -26,36 +26,38 @@ func NewService(serverAddress string) *MetricsService {
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		log.Printf("Send POST to /update/gauge/%s/%f", name, value)
+		log.Printf("Send Gauge metric %s === %f POST to /update", name, value)
 
 		_, err := service.client.R().
-			SetPathParams(map[string]string{
-				"name": name,
-				"value": strconv.FormatFloat(value, 'f', 6, 64),
+			SetBody(models.Metrics{
+				ID:    name,
+				MType: models.Gauge,
+				Value: &value,
 			}).
-			SetHeader("Content-Type", "text/plain").
-			Post("/update/gauge/{name}/{value}")
+			SetHeader("Content-Type", "application/json").
+			Post("/update")
 
-		if(err != nil) {
-			log.Printf("Failed POST to /update/gauge/%s/%f with %v", name, value, err)
+		if err != nil {
+			log.Printf("Failed Gauge metric %s === %f POST to /update  with %v", name, value, err)
 			panic(err)
 		}
 	}
-	
+
 	for name, value := range report.counters {
 
-		log.Printf("Send POST to /update/counter/%s/%d", name, value)
+		log.Printf("Send Counter metric %s === %d POST to /update", name, value)
 
 		_, err := service.client.R().
-			SetPathParams(map[string]string{
-				"name": name,
-				"value": strconv.FormatInt(value, 10),
+			SetBody(models.Metrics{
+				ID:    name,
+				MType: models.Counter,
+				Delta: &value,
 			}).
-			SetHeader("Content-Type", "text/plain").
-			Post("/update/counter/{name}/{value}")
+			SetHeader("Content-Type", "application/json").
+			Post("/update")
 
-		if(err != nil) {
-			log.Printf("Failed POST to /update/counter/%s/%d with %v", name, value, err)
+		if err != nil {
+			log.Printf("Failed Counter metric %s === %d POST to /update with %v", name, value, err)
 			panic(err)
 		}
 	}
