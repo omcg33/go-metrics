@@ -1,19 +1,26 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 
 	"github.com/omcg33/go-metrics/internal/config"
 	"github.com/omcg33/go-metrics/internal/handler"
+	logger "github.com/omcg33/go-metrics/internal/logger"
+	"github.com/omcg33/go-metrics/internal/middleware"
 	"github.com/omcg33/go-metrics/internal/repository"
 	"github.com/omcg33/go-metrics/internal/service"
 )
 
 func main() {
+	if err := logger.Initialize("Info"); err != nil {
+		panic(err)
+	}
+
 	config := config.NewConfig()
 	storage := repository.NewMemStorage()
 	svc := service.NewService(storage)
@@ -22,17 +29,17 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
+	router.Use(chiMiddleware.Recoverer)
 
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	log.Printf("Server listening on http://%s", config.ServerAddress)
+	logger.Log.Info("Server listening", zap.String("address", config.ServerAddress))
 
 	err := http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {
-		log.Println("Server failed")
+		logger.Log.Info("Server failed")
 		panic(err)
 	}
 }

@@ -9,6 +9,8 @@ require (
 	resty.dev/v3 v3.0.0-rc.3
 )
 
+require go.uber.org/multierr v1.10.0 // indirect
+
 require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
@@ -16,6 +18,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
+	go.uber.org/zap v1.28.0
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/net v0.54.0 // indirect
