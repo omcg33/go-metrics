@@ -31,6 +31,7 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
 
+	router.Post("/update", controller.CreateOrUpdateMetric)
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
