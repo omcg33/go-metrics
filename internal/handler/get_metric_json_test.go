@@ -28,7 +28,7 @@ func TestGetMetricJSON_GaugeStatusOK(t *testing.T) {
 	rr := getMetricJSON(svc, `{"id":"Alloc","type":"gauge"}`)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "1.5", rr.Body.String())
+	assert.JSONEq(t, `{"id":"Alloc","type":"gauge","value":1.5}`, rr.Body.String())
 }
 
 func TestGetMetricJSON_GaugeOmitsTrailingZeros(t *testing.T) {
@@ -38,7 +38,7 @@ func TestGetMetricJSON_GaugeOmitsTrailingZeros(t *testing.T) {
 	rr := getMetricJSON(svc, `{"id":"testSetGet216","type":"gauge"}`)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "65024.953", rr.Body.String())
+	assert.JSONEq(t, `{"id":"testSetGet216","type":"gauge","value":65024.953}`, rr.Body.String())
 }
 
 func TestGetMetricJSON_CounterStatusOK(t *testing.T) {
@@ -48,6 +48,7 @@ func TestGetMetricJSON_CounterStatusOK(t *testing.T) {
 	rr := getMetricJSON(svc, `{"id":"Alloc","type":"counter"}`)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.JSONEq(t, `{"id":"Alloc","type":"counter","delta":1}`, rr.Body.String())
 }
 
 func getMetricJSON(svc *MockMetricsService, body string) *httptest.ResponseRecorder {

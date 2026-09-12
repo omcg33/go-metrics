@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	models "github.com/omcg33/go-metrics/internal/model"
 )
@@ -38,20 +37,44 @@ func (controller *Controller) GetMetricJSON(res http.ResponseWriter, req *http.R
 	switch data.MType {
 	case models.Gauge:
 		value, isExist := controller.service.Gauge(data.ID)
+
 		if !isExist {
 			http.Error(res, "metric name by name "+data.ID+" not found", http.StatusNotFound)
 			return
 		}
 
-		res.Write([]byte(strconv.FormatFloat(value, 'f', -1, 64)))
+		jsonData, err := json.Marshal(models.Metrics{
+			ID:    data.ID,
+			MType: data.MType,
+			Value: &value,
+		})
+
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Write(jsonData)
 	case models.Counter:
 		value, isExist := controller.service.Counter(data.ID)
+
 		if !isExist {
 			http.Error(res, "metric name by name "+data.ID+"not found", http.StatusNotFound)
 			return
 		}
 
-		res.Write([]byte(strconv.FormatInt(value, 10)))
+		jsonData, err := json.Marshal(models.Metrics{
+			ID:    data.ID,
+			MType: data.MType,
+			Delta: &value,
+		})
+
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.Write(jsonData)
 	default:
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
