@@ -24,12 +24,14 @@ func (controller *Controller) CreateOrUpdateMetricJson(res http.ResponseWriter, 
 		return
 	}
 
-	if data.MType != "gauge" || data.MType != "counter" {
+	if data.MType != "gauge" && data.MType != "counter" {
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
+		return
 	}
 
 	if data.ID == "" {
 		http.Error(res, "metric name is required", http.StatusNotFound)
+		return
 	}
 
 	switch data.MType {
@@ -41,8 +43,6 @@ func (controller *Controller) CreateOrUpdateMetricJson(res http.ResponseWriter, 
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
 		return
 	}
-
-	res.WriteHeader(http.StatusOK)
 
 	res.WriteHeader(http.StatusOK)
 }

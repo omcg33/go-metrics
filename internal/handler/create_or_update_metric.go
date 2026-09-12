@@ -15,10 +15,12 @@ func (controller *Controller) CreateOrUpdateMetric(res http.ResponseWriter, req 
 
 	if metricType != "gauge" && metricType != "counter" {
 		http.Error(res, "invalid metric type", http.StatusBadRequest)
+		return
 	}
 
 	if metricName == "" {
 		http.Error(res, "metric name is required", http.StatusNotFound)
+		return
 	}
 
 	switch metricType {
