@@ -8,7 +8,7 @@ import (
 	models "github.com/omcg33/go-metrics/internal/model"
 )
 
-func (controller *Controller) CreateOrUpdateMetricJson(res http.ResponseWriter, req *http.Request) {
+func (controller *Controller) CreateOrUpdateMetricJSON(res http.ResponseWriter, req *http.Request) {
 	var buf bytes.Buffer
 	var data models.Metrics
 

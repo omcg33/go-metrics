@@ -46,7 +46,7 @@ func createOrUpdateJSON(svc *MockMetricsService, body string) *httptest.Response
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
 
-	NewController(svc).CreateOrUpdateMetricJson(rr, req)
+	NewController(svc).CreateOrUpdateMetricJSON(rr, req)
 
 	return rr
 }
