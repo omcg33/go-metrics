@@ -7,11 +7,6 @@ import (
 	models "github.com/omcg33/go-metrics/internal/model"
 )
 
-type GetMetricParams struct {
-	Type string `validate:"required,metric_type"`
-	Name string `validate:"required"`
-}
-
 func (controller *Controller) GetMetric(res http.ResponseWriter, req *http.Request) {
 	metricType := req.PathValue("type")
 	metricName := req.PathValue("name")
