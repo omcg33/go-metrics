@@ -24,6 +24,10 @@ func NewService(serverAddress string) *MetricsService {
 	}
 }
 
+func (service *MetricsService) Close() error {
+	return service.client.Close()
+}
+
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
 		log.Printf("Send Gauge metric %s === %f POST to /update", name, value)

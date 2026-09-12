@@ -16,6 +16,7 @@ func main() {
 
 	defer pollTicker.Stop()
 	defer reportTicker.Stop()
+	defer service.Close()
 
 	for {
 		select {
