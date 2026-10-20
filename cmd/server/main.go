@@ -21,6 +21,8 @@ func main() {
 		panic(err)
 	}
 
+	defer logger.Log.Sync()
+
 	config := config.NewConfig()
 	storage := repository.NewMemStorage()
 	svc := service.NewService(storage)
