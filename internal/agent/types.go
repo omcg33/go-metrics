@@ -5,7 +5,7 @@ type Service interface {
 }
 
 type Report struct {
-	gauges map[string]float64
+	gauges   map[string]float64
 	counters map[string]int64
 }
 
@@ -15,7 +15,7 @@ type Collector interface {
 }
 
 type Config struct {
-    ServerAddress *string
-    ReportInterval *int
-	PollInterval *int
+	ServerAddress  string `env:"ADDRESS"`
+	ReportInterval int    `env:"REPORT_INTERVAL"`
+	PollInterval   int    `env:"POLL_INTERVAL"`
 }

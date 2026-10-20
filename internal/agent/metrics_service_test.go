@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,11 +10,17 @@ import (
 )
 
 func TestNewService_NotNil(t *testing.T) {
-	assert.NotNil(t, NewService("http://localhost:8080"))
+	s := NewService("http://localhost:8080")
+	t.Cleanup(func() { _ = s.Close() })
+
+	assert.NotNil(t, s)
 }
 
 func TestNewService_ClientNotNil(t *testing.T) {
-	assert.NotNil(t, NewService("http://localhost:8080").client)
+	s := NewService("http://localhost:8080")
+	t.Cleanup(func() { _ = s.Close() })
+
+	assert.NotNil(t, s.client)
 }
 
 func TestReport_GaugeMethod(t *testing.T) {
@@ -25,13 +32,19 @@ func TestReport_GaugeMethod(t *testing.T) {
 func TestReport_GaugePath(t *testing.T) {
 	req := reportAndCapture(t, Report{gauges: map[string]float64{"Alloc": 1.5}})
 
-	assert.Equal(t, "/update/gauge/Alloc/1.500000", req.URL.Path)
+	assert.Equal(t, "/update/", req.Path)
 }
 
 func TestReport_GaugeContentType(t *testing.T) {
 	req := reportAndCapture(t, Report{gauges: map[string]float64{"Alloc": 1.5}})
 
-	assert.Equal(t, "text/plain", req.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json", req.ContentType)
+}
+
+func TestReport_GaugeBody(t *testing.T) {
+	req := reportAndCapture(t, Report{gauges: map[string]float64{"Alloc": 1.5}})
+
+	assert.JSONEq(t, `{"id":"Alloc","type":"gauge","value":1.5}`, string(req.Body))
 }
 
 func TestReport_CounterMethod(t *testing.T) {
@@ -43,13 +56,19 @@ func TestReport_CounterMethod(t *testing.T) {
 func TestReport_CounterPath(t *testing.T) {
 	req := reportAndCapture(t, Report{counters: map[string]int64{"PollCount": 42}})
 
-	assert.Equal(t, "/update/counter/PollCount/42", req.URL.Path)
+	assert.Equal(t, "/update/", req.Path)
 }
 
 func TestReport_CounterContentType(t *testing.T) {
 	req := reportAndCapture(t, Report{counters: map[string]int64{"PollCount": 42}})
 
-	assert.Equal(t, "text/plain", req.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json", req.ContentType)
+}
+
+func TestReport_CounterBody(t *testing.T) {
+	req := reportAndCapture(t, Report{counters: map[string]int64{"PollCount": 42}})
+
+	assert.JSONEq(t, `{"id":"PollCount","type":"counter","delta":42}`, string(req.Body))
 }
 
 func TestReport_EmptyMakesNoRequests(t *testing.T) {
@@ -60,37 +79,57 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 	t.Cleanup(srv.Close)
 
 	s := NewService(srv.URL)
+	t.Cleanup(func() { _ = s.Close() })
 	s.Report(Report{})
 
 	assert.Equal(t, 0, n)
 }
 
-func TestReport_PanicsWhenGaugePostFails(t *testing.T) {
+func TestReport_DoesNotPanicWhenGaugePostFails(t *testing.T) {
 	s := NewService(closedServerURL(t))
+	t.Cleanup(func() { _ = s.Close() })
 
-	assert.Panics(t, func() {
+	assert.NotPanics(t, func() {
 		s.Report(Report{gauges: map[string]float64{"Alloc": 1}})
 	})
 }
 
-func TestReport_PanicsWhenCounterPostFails(t *testing.T) {
+func TestReport_DoesNotPanicWhenCounterPostFails(t *testing.T) {
 	s := NewService(closedServerURL(t))
+	t.Cleanup(func() { _ = s.Close() })
 
-	assert.Panics(t, func() {
+	assert.NotPanics(t, func() {
 		s.Report(Report{counters: map[string]int64{"PollCount": 1}})
 	})
 }
 
-func reportAndCapture(t *testing.T, report Report) *http.Request {
+type capturedRequest struct {
+	Method      string
+	Path        string
+	ContentType string
+	Body        []byte
+}
+
+func reportAndCapture(t *testing.T, report Report) capturedRequest {
 	t.Helper()
 
-	var got *http.Request
+	var got capturedRequest
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		got = r.Clone(r.Context())
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got = capturedRequest{
+			Method:      r.Method,
+			Path:        r.URL.Path,
+			ContentType: r.Header.Get("Content-Type"),
+			Body:        body,
+		}
 	}))
 	t.Cleanup(srv.Close)
 
 	s := NewService(srv.URL)
+	t.Cleanup(func() { _ = s.Close() })
 	s.Report(report)
 
 	return got
