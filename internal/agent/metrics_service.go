@@ -19,10 +19,16 @@ func NewService(serverAddress string) *MetricsService {
 		serverAddress = "http://" + serverAddress
 	}
 
+	client := resty.New().
+		SetBaseURL(serverAddress).
+		SetRequestMiddlewares(
+			resty.MiddlewareRequestCreate,
+			gzipMiddleware,
+		).
+		SetCloseConnection(true)
+
 	return &MetricsService{
-		client: resty.New().
-			SetBaseURL(serverAddress).
-			SetCloseConnection(true),
+		client: client,
 	}
 }
 

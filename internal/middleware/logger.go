@@ -46,6 +46,7 @@ func Logger(next http.Handler) http.Handler {
 		start := time.Now()
 		uri := r.RequestURI
 		method := r.Method
+		contentEncoding := r.Header.Get("Content-Encoding")
 
 		responseData := &responseData{
 			status: 0,
@@ -64,6 +65,7 @@ func Logger(next http.Handler) http.Handler {
 			"Incoming HTTP request",
 			zap.String("uri", uri),
 			zap.String("method", method),
+			zap.String("content-encoding", contentEncoding),
 			zap.String("duration", duration.String()),
 			zap.String("status", strconv.Itoa(responseData.status)),
 			zap.String("size", strconv.Itoa(responseData.size)),

@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"compress/gzip"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -115,7 +116,11 @@ func reportAndCapture(t *testing.T, report Report) capturedRequest {
 
 	var got capturedRequest
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
+		zr, err := gzip.NewReader(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, err := io.ReadAll(zr)
 		if err != nil {
 			t.Fatal(err)
 		}
