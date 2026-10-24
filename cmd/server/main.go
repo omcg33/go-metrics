@@ -31,6 +31,8 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
+	router.Use(middleware.DecompressRequest)
+	router.Use(middleware.CompressResponse)
 	router.Use(chiMiddleware.Recoverer)
 
 	router.Post("/value/", controller.GetMetricJSON)
