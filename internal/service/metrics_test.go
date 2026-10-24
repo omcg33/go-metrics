@@ -7,38 +7,34 @@ import (
 )
 
 func TestNewService_NotNil(t *testing.T) {
-	assert.NotNil(t, NewService(&storageMock{}))
+	assert.NotNil(t, NewService(NewMockStorage(t)))
 }
 
 func TestNewService_SetsRepository(t *testing.T) {
-	repo := &storageMock{}
+	repo := NewMockStorage(t)
 
 	assert.Equal(t, repo, NewService(repo).repository)
 }
 
 func TestCreateOrUpdateGauge(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("UpdateGauge", "Alloc", 1.5).Return()
+	repo := NewMockStorage(t)
+	repo.EXPECT().UpdateGauge("Alloc", 1.5).Return()
 
 	NewService(repo).CreateOrUpdateGauge("Alloc", 1.5)
-
-	repo.AssertCalled(t, "UpdateGauge", "Alloc", 1.5)
 }
 
 func TestCreateOrUpdateCounter(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("UpdateCounter", "PollCount", int64(10)).Return()
+	repo := NewMockStorage(t)
+	repo.EXPECT().UpdateCounter("PollCount", int64(10)).Return()
 
 	NewService(repo).CreateOrUpdateCounter("PollCount", 10)
-
-	repo.AssertCalled(t, "UpdateCounter", "PollCount", int64(10))
 }
 
 func TestMetrics_Gauges(t *testing.T) {
-	repo := &storageMock{}
+	repo := NewMockStorage(t)
 	gauges := map[string]float64{"Alloc": 1.5}
-	repo.On("Gauges").Return(gauges)
-	repo.On("Counters").Return(map[string]int64{})
+	repo.EXPECT().Gauges().Return(gauges)
+	repo.EXPECT().Counters().Return(map[string]int64{})
 
 	got := NewService(repo).Metrics()
 
@@ -46,10 +42,10 @@ func TestMetrics_Gauges(t *testing.T) {
 }
 
 func TestMetrics_Counters(t *testing.T) {
-	repo := &storageMock{}
+	repo := NewMockStorage(t)
 	counters := map[string]int64{"PollCount": 10}
-	repo.On("Gauges").Return(map[string]float64{})
-	repo.On("Counters").Return(counters)
+	repo.EXPECT().Gauges().Return(map[string]float64{})
+	repo.EXPECT().Counters().Return(counters)
 
 	got := NewService(repo).Metrics()
 
@@ -57,8 +53,8 @@ func TestMetrics_Counters(t *testing.T) {
 }
 
 func TestGauge(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("Gauges").Return(map[string]float64{"Alloc": 1.5})
+	repo := NewMockStorage(t)
+	repo.EXPECT().Gauges().Return(map[string]float64{"Alloc": 1.5})
 
 	got, ok := NewService(repo).Gauge("Alloc")
 
@@ -66,8 +62,8 @@ func TestGauge(t *testing.T) {
 }
 
 func TestGauge_NotFound(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("Gauges").Return(map[string]float64{})
+	repo := NewMockStorage(t)
+	repo.EXPECT().Gauges().Return(map[string]float64{})
 
 	_, ok := NewService(repo).Gauge("Alloc")
 
@@ -75,8 +71,8 @@ func TestGauge_NotFound(t *testing.T) {
 }
 
 func TestCounter(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("Counters").Return(map[string]int64{"PollCount": 10})
+	repo := NewMockStorage(t)
+	repo.EXPECT().Counters().Return(map[string]int64{"PollCount": 10})
 
 	got, ok := NewService(repo).Counter("PollCount")
 
@@ -84,8 +80,8 @@ func TestCounter(t *testing.T) {
 }
 
 func TestCounter_NotFound(t *testing.T) {
-	repo := &storageMock{}
-	repo.On("Counters").Return(map[string]int64{})
+	repo := NewMockStorage(t)
+	repo.EXPECT().Counters().Return(map[string]int64{})
 
 	_, ok := NewService(repo).Counter("PollCount")
 

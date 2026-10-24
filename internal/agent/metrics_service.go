@@ -1,62 +1,78 @@
 package agent
 
 import (
-	"fmt"
-	"strconv"
+	"log"
 	"strings"
 
+	models "github.com/omcg33/go-metrics/internal/model"
 	"resty.dev/v3"
 )
 
 var _ Service = (*MetricsService)(nil)
 
 type MetricsService struct {
-	client *resty.Client;
+	client *resty.Client
 }
 
 func NewService(serverAddress string) *MetricsService {
 	if !strings.Contains(serverAddress, "://") {
-    	serverAddress = "http://" + serverAddress
-}
+		serverAddress = "http://" + serverAddress
+	}
+
+	client := resty.New().
+		SetBaseURL(serverAddress).
+		SetRequestMiddlewares(
+			resty.MiddlewareRequestCreate,
+			gzipMiddleware,
+		).
+		SetCloseConnection(true)
 
 	return &MetricsService{
-		client: resty.New().SetBaseURL(serverAddress),
+		client: client,
 	}
+}
+
+func (service *MetricsService) Close() error {
+	return service.client.Close()
 }
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		fmt.Printf("Send POST to /update/gauge/%s/%f\n", name, value)
+		log.Printf("Send Gauge metric %s === %f POST to /update", name, value)
 
+		gaugeValue := value
 		_, err := service.client.R().
-			SetPathParams(map[string]string{
-				"name": name,
-				"value": strconv.FormatFloat(value, 'f', 6, 64),
+			SetBody(models.Metrics{
+				ID:    name,
+				MType: models.Gauge,
+				Value: &gaugeValue,
 			}).
-			SetHeader("Content-Type", "text/plain").
-			Post("/update/gauge/{name}/{value}")
+			SetHeader("Content-Type", "application/json").
+			Post("/update/")
 
-		if(err != nil) {
-			fmt.Errorf("Failed POST to /update/gauge/%s/%f with %w", name, value, err)
-			panic(err)
+		if err != nil {
+			log.Printf("Failed Gauge metric %s === %f POST to /update  with %v", name, value, err)
+			continue
 		}
 	}
-	
+
 	for name, value := range report.counters {
 
-		fmt.Printf("Send POST to /update/counter/%s/%d\n", name, value)
+		log.Printf("Send Counter metric %s === %d POST to /update", name, value)
 
+		counterValue := value
 		_, err := service.client.R().
-			SetPathParams(map[string]string{
-				"name": name,
-				"value": strconv.FormatInt(value, 10),
+			SetBody(models.Metrics{
+				ID:    name,
+				MType: models.Counter,
+				Delta: &counterValue,
 			}).
-			SetHeader("Content-Type", "text/plain").
-			Post("/update/counter/{name}/{value}")
+			SetHeader("Content-Type", "application/json").
+			Post("/update/")
 
-		if(err != nil) {
-			fmt.Errorf("Failed POST to /update/counter/%s/%d with %w",  name, value, err)
-			panic(err)
+		if err != nil {
+			log.Printf("Failed Counter metric %s === %d POST to /update with %v", name, value, err)
+			continue
 		}
 	}
 }
