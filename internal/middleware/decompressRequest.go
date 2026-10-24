@@ -36,7 +36,6 @@ func DecompressRequest(next http.Handler) http.Handler {
 		r.ContentLength = int64(len(body))
 
 		next.ServeHTTP(w, r)
-		return
 	}
 
 	return http.HandlerFunc(fn)
