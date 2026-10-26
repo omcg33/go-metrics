@@ -25,8 +25,23 @@ func main() {
 
 	config := config.NewConfig()
 	storage := repository.NewMemStorage()
-	svc := service.NewService(storage)
+	fileStorage, fileStorageErr := repository.NewFileStorage(
+		repository.FileStorageConfig{
+			FilePath:      config.FileStoragePath,
+			Restore:       config.Restore,
+			StoreInterval: config.StoreInterval,
+		},
+		storage,
+	)
+	svc := service.NewService(fileStorage)
 	controller := handler.NewController(svc)
+
+	if fileStorageErr != nil {
+		logger.Log.Fatal("Failed to init FileStorage", zap.Error(fileStorageErr))
+		panic(fileStorageErr)
+	}
+
+	go fileStorage.AutoSave()
 
 	router := chi.NewRouter()
 
