@@ -42,7 +42,8 @@ func (f *FileStorage) Restore() error {
 	data, err := os.ReadFile(f.config.FilePath)
 
 	if err != nil {
-		return err
+		logger.Log.Info("Metrics does not restored.", zap.String("filePath", f.config.FilePath))
+		return nil
 	}
 
 	var metrics []models.Metrics
