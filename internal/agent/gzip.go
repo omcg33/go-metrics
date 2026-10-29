@@ -54,10 +54,5 @@ func gzipMiddleware(client *resty.Client, r *resty.Request) error {
 	req.ContentLength = int64(len(compressed))
 	req.Header.Set("Content-Encoding", "gzip")
 
-	// Важно для retry.
-	// req.GetBody = func() (io.ReadCloser, error) {
-	// 	return io.NopCloser(bytes.NewReader(compressed)), nil
-	// }
-
 	return nil
 }

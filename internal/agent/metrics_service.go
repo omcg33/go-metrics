@@ -1,20 +1,23 @@
 package agent
 
 import (
-	"log"
 	"strings"
 
-	models "github.com/omcg33/go-metrics/internal/model"
+	"go.uber.org/zap"
 	"resty.dev/v3"
+
+	logs "github.com/omcg33/go-metrics/internal/logger"
+	models "github.com/omcg33/go-metrics/internal/model"
 )
 
 var _ Service = (*MetricsService)(nil)
 
 type MetricsService struct {
 	client *resty.Client
+	logger *logs.Logger
 }
 
-func NewService(serverAddress string) *MetricsService {
+func NewService(serverAddress string, logger *logs.Logger) *MetricsService {
 	if !strings.Contains(serverAddress, "://") {
 		serverAddress = "http://" + serverAddress
 	}
@@ -29,6 +32,7 @@ func NewService(serverAddress string) *MetricsService {
 
 	return &MetricsService{
 		client: client,
+		logger: logger,
 	}
 }
 
@@ -38,7 +42,7 @@ func (service *MetricsService) Close() error {
 
 func (service *MetricsService) Report(report Report) {
 	for name, value := range report.gauges {
-		log.Printf("Send Gauge metric %s === %f POST to /update", name, value)
+		service.logger.Info("Send Gauge metric POST to /update", zap.String("name", name), zap.Float64("value", value))
 
 		gaugeValue := value
 		_, err := service.client.R().
@@ -51,14 +55,14 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/")
 
 		if err != nil {
-			log.Printf("Failed Gauge metric %s === %f POST to /update  with %v", name, value, err)
+			service.logger.Error("Failed Gauge metric POST to /update", zap.String("name", name), zap.Float64("value", value), zap.Error(err))
 			continue
 		}
 	}
 
 	for name, value := range report.counters {
 
-		log.Printf("Send Counter metric %s === %d POST to /update", name, value)
+		service.logger.Info("Send Counter metric POST to /update", zap.String("name", name), zap.Int64("value", value))
 
 		counterValue := value
 		_, err := service.client.R().
@@ -71,7 +75,7 @@ func (service *MetricsService) Report(report Report) {
 			Post("/update/")
 
 		if err != nil {
-			log.Printf("Failed Counter metric %s === %d POST to /update with %v", name, value, err)
+			service.logger.Error("Failed Counter metric %s === %d POST to /update with %v", zap.String("name", name), zap.Int64("value", value), zap.Error(err))
 			continue
 		}
 	}

@@ -1,10 +1,11 @@
 package agent
 
 import (
-	"log"
 	"math/rand"
 	"runtime"
-);
+
+	logs "github.com/omcg33/go-metrics/internal/logger"
+)
 
 var _ Collector = (*RuntimeCollector)(nil)
 
@@ -12,13 +13,15 @@ type GaugeReader func(ms runtime.MemStats) float64
 type CounterReader func() int64
 
 type RuntimeCollector struct {
-	gaugeReaders map[string]GaugeReader
+	logger         *logs.Logger
+	gaugeReaders   map[string]GaugeReader
 	counterReaders map[string]CounterReader
-	gauges   map[string]float64
-	counters map[string]int64
+	gauges         map[string]float64
+	counters       map[string]int64
 }
 
-func NewRuntimeCollector() *RuntimeCollector {
+func NewRuntimeCollector(logger *logs.Logger) *RuntimeCollector {
+
 	var gaugeReaders = map[string]GaugeReader{
 		"Alloc": func(ms runtime.MemStats) float64 {
 			return float64(ms.Alloc)
@@ -101,15 +104,16 @@ func NewRuntimeCollector() *RuntimeCollector {
 		"TotalAlloc": func(ms runtime.MemStats) float64 {
 			return float64(ms.TotalAlloc)
 		},
-		"RandomValue":func(ms runtime.MemStats) float64 {
+		"RandomValue": func(ms runtime.MemStats) float64 {
 			return rand.Float64()
 		},
 	}
 
 	c := &RuntimeCollector{
+		logger:       logger,
 		gaugeReaders: gaugeReaders,
-		gauges:   make(map[string]float64),
-		counters: make(map[string]int64),
+		gauges:       make(map[string]float64),
+		counters:     make(map[string]int64),
 	}
 
 	c.counterReaders = map[string]CounterReader{
@@ -126,8 +130,8 @@ func (c *RuntimeCollector) Collect() {
 	var m runtime.MemStats
 
 	runtime.ReadMemStats(&m)
-	
-	log.Println("Collecting metrics")
+
+	c.logger.Info("Collecting metrics")
 
 	for name, reader := range c.gaugeReaders {
 		c.gauges[name] = reader(m)
@@ -139,9 +143,10 @@ func (c *RuntimeCollector) Collect() {
 }
 
 func (c *RuntimeCollector) Report() Report {
-	log.Println("Report created")
+	c.logger.Info("Report created")
+
 	return Report{
-		gauges: c.gauges,
+		gauges:   c.gauges,
 		counters: c.counters,
 	}
 }

@@ -2,12 +2,13 @@ package agent
 
 import (
 	flag "flag"
-	log "log"
 
-	env "github.com/caarlos0/env/v6"
+	env "github.com/caarlos0/env/v11"
+	logs "github.com/omcg33/go-metrics/internal/logger"
+	"go.uber.org/zap"
 )
 
-func NewConfig() *Config {
+func NewConfig(logger *logs.Logger) *Config {
 	cfg := &Config{}
 
 	flag.StringVar(&cfg.ServerAddress, "a", "localhost:8080", "Адрес сервера")
@@ -18,7 +19,7 @@ func NewConfig() *Config {
 	err := env.Parse(cfg)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("Failed to parse envs", zap.Error(err))
 	}
 
 	return cfg

@@ -8,17 +8,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestNewService_NotNil(t *testing.T) {
-	s := NewService("http://localhost:8080")
+	s := NewService("http://localhost:8080", zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 
 	assert.NotNil(t, s)
 }
 
 func TestNewService_ClientNotNil(t *testing.T) {
-	s := NewService("http://localhost:8080")
+	s := NewService("http://localhost:8080", zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 
 	assert.NotNil(t, s.client)
@@ -79,7 +80,7 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	s := NewService(srv.URL)
+	s := NewService(srv.URL, zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 	s.Report(Report{})
 
@@ -87,7 +88,7 @@ func TestReport_EmptyMakesNoRequests(t *testing.T) {
 }
 
 func TestReport_DoesNotPanicWhenGaugePostFails(t *testing.T) {
-	s := NewService(closedServerURL(t))
+	s := NewService(closedServerURL(t), zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 
 	assert.NotPanics(t, func() {
@@ -96,7 +97,7 @@ func TestReport_DoesNotPanicWhenGaugePostFails(t *testing.T) {
 }
 
 func TestReport_DoesNotPanicWhenCounterPostFails(t *testing.T) {
-	s := NewService(closedServerURL(t))
+	s := NewService(closedServerURL(t), zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 
 	assert.NotPanics(t, func() {
@@ -133,7 +134,7 @@ func reportAndCapture(t *testing.T, report Report) capturedRequest {
 	}))
 	t.Cleanup(srv.Close)
 
-	s := NewService(srv.URL)
+	s := NewService(srv.URL, zap.NewNop())
 	t.Cleanup(func() { _ = s.Close() })
 	s.Report(report)
 

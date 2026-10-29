@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -18,7 +19,7 @@ import (
 
 func main() {
 	if err := logger.Initialize("Info"); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	defer logger.Log.Sync()
@@ -38,7 +39,6 @@ func main() {
 
 	if fileStorageErr != nil {
 		logger.Log.Fatal("Failed to init FileStorage", zap.Error(fileStorageErr))
-		panic(fileStorageErr)
 	}
 
 	go fileStorage.AutoSave()
@@ -60,7 +60,6 @@ func main() {
 
 	err := http.ListenAndServe(config.ServerAddress, router)
 	if err != nil {
-		logger.Log.Info("Server failed")
-		panic(err)
+		logger.Log.Fatal("Server failed", zap.Error(err))
 	}
 }
