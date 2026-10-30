@@ -11,20 +11,21 @@ import (
 
 	"github.com/omcg33/go-metrics/internal/config"
 	"github.com/omcg33/go-metrics/internal/handler"
-	logger "github.com/omcg33/go-metrics/internal/logger"
+	logs "github.com/omcg33/go-metrics/internal/logger"
 	"github.com/omcg33/go-metrics/internal/middleware"
 	"github.com/omcg33/go-metrics/internal/repository"
 	"github.com/omcg33/go-metrics/internal/service"
 )
 
 func main() {
-	if err := logger.Initialize("Info"); err != nil {
-		log.Fatal(err)
+	logger, logErr := logs.NewLogger("Info")
+
+	if logErr != nil {
+		log.Fatal(logErr)
 	}
+	defer logger.Sync()
 
-	defer logger.Log.Sync()
-
-	config := config.NewConfig()
+	config := config.NewConfig(logger)
 	storage := repository.NewMemStorage()
 	fileStorage, fileStorageErr := repository.NewFileStorage(
 		repository.FileStorageConfig{
@@ -33,19 +34,20 @@ func main() {
 			StoreInterval: config.StoreInterval,
 		},
 		storage,
+		logger,
 	)
 	svc := service.NewService(fileStorage)
 	controller := handler.NewController(svc)
 
 	if fileStorageErr != nil {
-		logger.Log.Fatal("Failed to init FileStorage", zap.Error(fileStorageErr))
+		logger.Fatal("Failed to init FileStorage", zap.Error(fileStorageErr))
 	}
 
 	go fileStorage.AutoSave()
 
 	router := chi.NewRouter()
 
-	router.Use(middleware.Logger)
+	router.Use(middleware.Logger(logger))
 	router.Use(middleware.DecompressRequest)
 	router.Use(middleware.CompressResponse)
 	router.Use(chiMiddleware.Recoverer)
@@ -56,10 +58,11 @@ func main() {
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
 
-	logger.Log.Info("Server listening", zap.String("address", config.ServerAddress))
+	logger.Info("Server listening", zap.String("address", config.ServerAddress))
 
 	err := http.ListenAndServe(config.ServerAddress, router)
+
 	if err != nil {
-		logger.Log.Fatal("Server failed", zap.Error(err))
+		logger.Fatal("Server failed", zap.Error(err))
 	}
 }

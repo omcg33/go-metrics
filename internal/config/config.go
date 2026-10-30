@@ -7,13 +7,13 @@ import (
 
 	env "github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
-	"github.com/omcg33/go-metrics/internal/logger"
+	logs "github.com/omcg33/go-metrics/internal/logger"
 	"go.uber.org/zap"
 )
 
-func NewConfig() *Config {
+func NewConfig(logger *logs.Logger) *Config {
 	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
-		logger.Log.Fatal("Error loading .env file - ", zap.Error(err))
+		logger.Fatal("Error loading .env file - ", zap.Error(err))
 	}
 
 	cfg := &Config{}
@@ -27,7 +27,7 @@ func NewConfig() *Config {
 	err := env.Parse(cfg)
 
 	if err != nil {
-		logger.Log.Fatal("Failed to parse config", zap.Error(err))
+		logger.Fatal("Failed to parse config", zap.Error(err))
 	}
 
 	return cfg

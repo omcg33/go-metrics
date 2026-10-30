@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/omcg33/go-metrics/internal/logger"
+	logs "github.com/omcg33/go-metrics/internal/logger"
 	models "github.com/omcg33/go-metrics/internal/model"
 	"go.uber.org/zap"
 )
@@ -17,14 +17,16 @@ type FileStorageConfig struct {
 }
 
 type FileStorage struct {
-	storage *MemStorage
 	config  FileStorageConfig
+	storage *MemStorage
+	logger  *logs.Logger
 }
 
-func NewFileStorage(config FileStorageConfig, storage *MemStorage) (*FileStorage, error) {
+func NewFileStorage(config FileStorageConfig, storage *MemStorage, logger *logs.Logger) (*FileStorage, error) {
 	f := &FileStorage{
-		storage: storage,
 		config:  config,
+		storage: storage,
+		logger:  logger,
 	}
 
 	if f.config.Restore {
@@ -42,7 +44,7 @@ func (f *FileStorage) Restore() error {
 	data, err := os.ReadFile(f.config.FilePath)
 
 	if err != nil {
-		logger.Log.Info("Metrics does not restored.", zap.String("filePath", f.config.FilePath))
+		f.logger.Info("Metrics does not restored.", zap.String("filePath", f.config.FilePath))
 		return nil
 	}
 
@@ -61,7 +63,7 @@ func (f *FileStorage) Restore() error {
 		}
 	}
 
-	logger.Log.Info("Metrics restored from file")
+	f.logger.Info("Metrics restored from file")
 
 	return nil
 }
@@ -75,7 +77,7 @@ func (f *FileStorage) AutoSave() {
 		err := f.Save()
 
 		if err != nil {
-			logger.Log.Fatal("Error saving data to file", zap.Error(err))
+			f.logger.Fatal("Error saving data to file", zap.Error(err))
 		}
 	}
 }
@@ -98,7 +100,7 @@ func (f *FileStorage) Save() error {
 		return err
 	}
 
-	logger.Log.Info("Metrics saved to files")
+	f.logger.Info("Metrics saved to files")
 
 	return os.WriteFile(f.config.FilePath, data, 0666)
 }
