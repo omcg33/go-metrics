@@ -1,9 +1,8 @@
 package service
 
-type TMetricsService interface {
-	CreateOrUpdateGauge(name string, value float64)
-	CreateOrUpdateCounter(name string, value int64)
-	Metrics() map[string]interface{}
-	Gauge(name string) (float64, bool)
-	Counter(name string) (int64, bool)
+type Storage interface {
+	UpdateGauge(name string, value float64)
+	UpdateCounter(name string, delta int64)
+	Gauges() (map[string]float64 )
+	Counters() (map[string]int64)
 }

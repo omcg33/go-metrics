@@ -1,43 +1,41 @@
 package main
 
 import (
-	"flag"
+	"log"
 	"time"
 
 	"github.com/omcg33/go-metrics/internal/agent"
+	logs "github.com/omcg33/go-metrics/internal/logger"
 )
-
-var (
-	serverAddress *string
-	reportInterval *int
-	pollInterval *int
-)
-
-func init() {
-  serverAddress = flag.String("a", "localhost:8080", "Адрес сервера")
-  reportInterval = flag.Int("r", 10 , "Частота отправки метрик на сервер")
-  pollInterval = flag.Int("p", 2 , "Частота опроса метрик из пакета ")
-}
-
 
 func main() {
-	flag.Parse();
+	logger, err := logs.NewLogger("Info")
 
-	reportTicker := time.NewTicker(time.Duration(*reportInterval) * time.Second)
-	pollTicker := time.NewTicker(time.Duration(*pollInterval) * time.Second)
-	collector := agent.NewRuntimeCollector()
-	service := agent.NewService(*serverAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logger.Sync()
+
+	config := agent.NewConfig(logger)
+
+	reportTicker := time.NewTicker(time.Duration(config.ReportInterval) * time.Second)
+	pollTicker := time.NewTicker(time.Duration(config.PollInterval) * time.Second)
+	collector := agent.NewRuntimeCollector(logger)
+	service := agent.NewService(config.ServerAddress, logger)
 
 	defer pollTicker.Stop()
 	defer reportTicker.Stop()
+	defer service.Close()
+
+	collector.Collect()
 
 	for {
 		select {
-			case <-pollTicker.C:
-				collector.Collect()
-			case <-reportTicker.C:
-				report := collector.Report()
-				service.Report(report)
+		case <-pollTicker.C:
+			collector.Collect()
+		case <-reportTicker.C:
+			report := collector.Report()
+			service.Report(report)
 		}
 	}
 }

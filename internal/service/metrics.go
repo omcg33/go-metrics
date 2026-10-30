@@ -1,16 +1,10 @@
 package service
 
-import (
-	"github.com/omcg33/go-metrics/internal/repository"
-)
-
-var _ TMetricsService = (*MetricsService)(nil)
-
 type MetricsService struct {
-	repository repository.TStorage
+	repository Storage
 }
 
-func NewService(repository repository.TStorage) *MetricsService {
+func NewService(repository Storage) *MetricsService {
 	return &MetricsService{repository: repository}
 }
 
