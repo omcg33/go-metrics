@@ -2,37 +2,66 @@ package middleware
 
 import (
 	"compress/gzip"
-	"io"
 	"net/http"
 	"strings"
 )
 
 type compressWriter struct {
 	http.ResponseWriter
-	Writer io.Writer
+	compressor      *gzip.Writer
+	isHeaderWritten bool
 }
 
-func (w compressWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
+func shouldCompress(contentType string) bool {
+	return strings.HasPrefix(contentType, "application/json") ||
+		strings.HasPrefix(contentType, "text/html")
+}
+
+func (w *compressWriter) Close() error {
+	if w.compressor != nil {
+		return w.compressor.Close()
+	}
+	return nil
+}
+
+func (w *compressWriter) Write(b []byte) (int, error) {
+	if !w.isHeaderWritten {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	if w.compressor != nil {
+		return w.compressor.Write(b)
+	}
+
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *compressWriter) WriteHeader(code int) {
+	if w.isHeaderWritten {
+		return
+	}
+	w.isHeaderWritten = true
+
+	headers := w.Header()
+
+	if shouldCompress(headers.Get("Content-Type")) {
+		headers.Set("Content-Encoding", "gzip")
+		headers.Del("Content-Length") // длина после сжатия изменится
+		w.compressor = gzip.NewWriter(w.ResponseWriter)
+	}
+
+	w.ResponseWriter.WriteHeader(code)
 }
 
 func CompressResponse(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer gz.Close()
-
-		w.Header().Set("Content-Encoding", "gzip")
-		next.ServeHTTP(compressWriter{ResponseWriter: w, Writer: gz}, r)
-	}
-
-	return http.HandlerFunc(fn)
+		cw := &compressWriter{ResponseWriter: w}
+		defer cw.Close()
+		next.ServeHTTP(cw, r)
+	})
 }
