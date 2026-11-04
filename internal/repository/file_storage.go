@@ -5,13 +5,14 @@ import (
 	"os"
 	"time"
 
+	renameio "github.com/google/renameio"
 	logs "github.com/omcg33/go-metrics/internal/logger"
 	models "github.com/omcg33/go-metrics/internal/model"
 	"go.uber.org/zap"
 )
 
 type FileStorageConfig struct {
-	StoreInterval int
+	StoreInterval time.Duration
 	Restore       bool
 	FilePath      string
 }
@@ -30,7 +31,7 @@ func NewFileStorage(config FileStorageConfig, storage *MemStorage, logger *logs.
 	}
 
 	if f.config.Restore {
-		err := f.Restore()
+		err := f.restore()
 
 		if err != nil {
 			return nil, err
@@ -40,7 +41,7 @@ func NewFileStorage(config FileStorageConfig, storage *MemStorage, logger *logs.
 	return f, nil
 }
 
-func (f *FileStorage) Restore() error {
+func (f *FileStorage) restore() error {
 	data, err := os.ReadFile(f.config.FilePath)
 
 	if err != nil {
@@ -68,21 +69,7 @@ func (f *FileStorage) Restore() error {
 	return nil
 }
 
-func (f *FileStorage) AutoSave() {
-	if f.config.StoreInterval == 0 {
-		return
-	}
-
-	for range time.Tick(time.Duration(f.config.StoreInterval) * time.Second) {
-		err := f.Save()
-
-		if err != nil {
-			f.logger.Fatal("Error saving data to file", zap.Error(err))
-		}
-	}
-}
-
-func (f *FileStorage) Save() error {
+func (f *FileStorage) save() error {
 	gauges := f.storage.Gauges()
 	counters := f.storage.Counters()
 	metrics := make([]models.Metrics, 0, len(gauges)+len(counters))
@@ -102,23 +89,51 @@ func (f *FileStorage) Save() error {
 
 	f.logger.Info("Metrics saved to files")
 
-	return os.WriteFile(f.config.FilePath, data, 0666)
+	return renameio.WriteFile(f.config.FilePath, data, 0666)
 }
 
-func (f *FileStorage) UpdateGauge(name string, value float64) {
+func (f *FileStorage) AutoSave() {
+	if f.config.StoreInterval == 0 {
+		return
+	}
+
+	for range time.Tick(f.config.StoreInterval) {
+		err := f.save()
+
+		if err != nil {
+			f.logger.Fatal("Error saving data to file", zap.Error(err))
+		}
+	}
+}
+
+func (f *FileStorage) UpdateGauge(name string, value float64) error {
 	f.storage.UpdateGauge(name, value)
 
 	if f.config.StoreInterval == 0 {
-		f.Save()
+		err := f.save()
+
+		if err != nil {
+			f.logger.Error("Failed to save metrics to file after UpdateGauge()", zap.Error(err))
+			return err
+		}
 	}
+
+	return nil
 }
 
-func (f *FileStorage) UpdateCounter(name string, delta int64) {
+func (f *FileStorage) UpdateCounter(name string, delta int64) error {
 	f.storage.UpdateCounter(name, delta)
 
 	if f.config.StoreInterval == 0 {
-		f.Save()
+		err := f.save()
+
+		if err != nil {
+			f.logger.Error("Failed to save metrics to file after UpdateCounter()", zap.Error(err))
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (f *FileStorage) Gauges() map[string]float64 {

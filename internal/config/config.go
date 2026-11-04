@@ -4,6 +4,7 @@ import (
 	"errors"
 	flag "flag"
 	"os"
+	"time"
 
 	env "github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -19,7 +20,7 @@ func NewConfig(logger *logs.Logger) *Config {
 	cfg := &Config{}
 
 	flag.StringVar(&cfg.ServerAddress, "a", "localhost:8080", "Адрес сервера")
-	flag.IntVar(&cfg.StoreInterval, "i", 300, "Интервал времени в секундах, по истечении которого текущие показания сервера сохраняются на диск")
+	flag.IntVar(&cfg.StoreIntervalInt, "i", 300, "Интервал времени в секундах, по истечении которого текущие показания сервера сохраняются на диск")
 	flag.StringVar(&cfg.FileStoragePath, "f", "./temp.txt", "Путь до файла, куда сохраняются текущие значения")
 	flag.BoolVar(&cfg.Restore, "r", false, "Следует ли загружать ранее сохранённые значения из указанного файла при старте сервера?")
 	flag.Parse()
@@ -29,6 +30,8 @@ func NewConfig(logger *logs.Logger) *Config {
 	if err != nil {
 		logger.Fatal("Failed to parse config", zap.Error(err))
 	}
+
+	cfg.StoreInterval = time.Duration(cfg.StoreIntervalInt) * time.Second
 
 	return cfg
 }

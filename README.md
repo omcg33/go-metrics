@@ -31,6 +31,12 @@ git fetch template && git checkout template/v2 .github
 
 Подробнее про локальный и автоматический запуск читайте в [README автотестов](https://github.com/Yandex-Practicum/go-autotests).
 
+## Генерация Моков
+
+```
+go tool mockery
+```
+
 ## Структура проекта
 
 Приведённая в этом репозитории структура проекта является рекомендуемой, но не обязательной.

@@ -18,14 +18,14 @@ func TestNewService_SetsRepository(t *testing.T) {
 
 func TestCreateOrUpdateGauge(t *testing.T) {
 	repo := NewMockStorage(t)
-	repo.EXPECT().UpdateGauge("Alloc", 1.5).Return()
+	repo.EXPECT().UpdateGauge("Alloc", 1.5).Return(nil)
 
 	NewService(repo).CreateOrUpdateGauge("Alloc", 1.5)
 }
 
 func TestCreateOrUpdateCounter(t *testing.T) {
 	repo := NewMockStorage(t)
-	repo.EXPECT().UpdateCounter("PollCount", int64(10)).Return()
+	repo.EXPECT().UpdateCounter("PollCount", int64(10)).Return(nil)
 
 	NewService(repo).CreateOrUpdateCounter("PollCount", 10)
 }

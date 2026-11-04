@@ -14,10 +14,19 @@ func NewMockStorage(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockStorage {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockStorage{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -128,9 +137,20 @@ func (_c *MockStorage_Gauges_Call) RunAndReturn(run func() map[string]float64) *
 }
 
 // UpdateCounter provides a mock function for the type MockStorage
-func (_mock *MockStorage) UpdateCounter(name string, delta int64) {
-	_mock.Called(name, delta)
-	return
+func (_mock *MockStorage) UpdateCounter(name string, delta int64) error {
+	ret := _mock.Called(name, delta)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateCounter")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string, int64) error); ok {
+		r0 = returnFunc(name, delta)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
 }
 
 // MockStorage_UpdateCounter_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateCounter'
@@ -163,20 +183,31 @@ func (_c *MockStorage_UpdateCounter_Call) Run(run func(name string, delta int64)
 	return _c
 }
 
-func (_c *MockStorage_UpdateCounter_Call) Return() *MockStorage_UpdateCounter_Call {
-	_c.Call.Return()
+func (_c *MockStorage_UpdateCounter_Call) Return(err error) *MockStorage_UpdateCounter_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockStorage_UpdateCounter_Call) RunAndReturn(run func(name string, delta int64)) *MockStorage_UpdateCounter_Call {
-	_c.Run(run)
+func (_c *MockStorage_UpdateCounter_Call) RunAndReturn(run func(name string, delta int64) error) *MockStorage_UpdateCounter_Call {
+	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateGauge provides a mock function for the type MockStorage
-func (_mock *MockStorage) UpdateGauge(name string, value float64) {
-	_mock.Called(name, value)
-	return
+func (_mock *MockStorage) UpdateGauge(name string, value float64) error {
+	ret := _mock.Called(name, value)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateGauge")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(string, float64) error); ok {
+		r0 = returnFunc(name, value)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
 }
 
 // MockStorage_UpdateGauge_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateGauge'
@@ -209,12 +240,12 @@ func (_c *MockStorage_UpdateGauge_Call) Run(run func(name string, value float64)
 	return _c
 }
 
-func (_c *MockStorage_UpdateGauge_Call) Return() *MockStorage_UpdateGauge_Call {
-	_c.Call.Return()
+func (_c *MockStorage_UpdateGauge_Call) Return(err error) *MockStorage_UpdateGauge_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockStorage_UpdateGauge_Call) RunAndReturn(run func(name string, value float64)) *MockStorage_UpdateGauge_Call {
-	_c.Run(run)
+func (_c *MockStorage_UpdateGauge_Call) RunAndReturn(run func(name string, value float64) error) *MockStorage_UpdateGauge_Call {
+	_c.Call.Return(run)
 	return _c
 }
