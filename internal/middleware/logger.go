@@ -50,7 +50,7 @@ func Logger(logger *logs.Logger) func(http.Handler) http.Handler {
 			contentEncoding := r.Header.Get("Content-Encoding")
 
 			responseData := &responseData{
-				status: 0,
+				status: http.StatusOK, // net/http ставит 200 сам, если WriteHeader не вызван
 				size:   0,
 			}
 
