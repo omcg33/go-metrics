@@ -5,22 +5,23 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestNewRuntimeCollector_NotNil(t *testing.T) {
-	assert.NotNil(t, NewRuntimeCollector())
+	assert.NotNil(t, NewRuntimeCollector(zap.NewNop()))
 }
 
 func TestNewRuntimeCollector_GaugesEmpty(t *testing.T) {
-	assert.Empty(t, NewRuntimeCollector().gauges)
+	assert.Empty(t, NewRuntimeCollector(zap.NewNop()).gauges)
 }
 
 func TestNewRuntimeCollector_CountersEmpty(t *testing.T) {
-	assert.Empty(t, NewRuntimeCollector().counters)
+	assert.Empty(t, NewRuntimeCollector(zap.NewNop()).counters)
 }
 
 func TestNewRuntimeCollector_GaugeReaders(t *testing.T) {
-	c := NewRuntimeCollector()
+	c := NewRuntimeCollector(zap.NewNop())
 	ms := runtime.MemStats{
 		Alloc:         1,
 		BuckHashSys:   2,
@@ -47,7 +48,7 @@ func TestNewRuntimeCollector_GaugeReaders(t *testing.T) {
 
 
 func TestRuntimeCollector_CollectIncrementsPollCount(t *testing.T) {
-	c := NewRuntimeCollector()
+	c := NewRuntimeCollector(zap.NewNop())
 	c.Collect()
 	c.Collect()
 
@@ -55,21 +56,21 @@ func TestRuntimeCollector_CollectIncrementsPollCount(t *testing.T) {
 }
 
 func TestRuntimeCollector_CollectRandomValue(t *testing.T) {
-	c := NewRuntimeCollector()
+	c := NewRuntimeCollector(zap.NewNop())
 	c.Collect()
 
 	assert.True(t, c.gauges["RandomValue"] >= 0 && c.gauges["RandomValue"] < 1)
 }
 
 func TestRuntimeCollector_ReportGauges(t *testing.T) {
-	c := NewRuntimeCollector()
+	c := NewRuntimeCollector(zap.NewNop())
 	c.Collect()
 
 	assert.Equal(t, c.gauges, c.Report().gauges)
 }
 
 func TestRuntimeCollector_ReportCounters(t *testing.T) {
-	c := NewRuntimeCollector()
+	c := NewRuntimeCollector(zap.NewNop())
 	c.Collect()
 
 	assert.Equal(t, c.counters, c.Report().counters)
