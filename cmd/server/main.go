@@ -27,6 +27,19 @@ func main() {
 
 	config := config.NewConfig(logger)
 	storage := repository.NewMemStorage()
+	dbStorage, dbStorageErr := repository.NewPostgreSqlStorage(
+		repository.PostgreSqlStorageConfig{
+			Dsn: config.DatabaseDsn,
+		},
+		logger,
+	)
+
+	if dbStorageErr != nil {
+		logger.Fatal("Failed to init PostgreSqlStorage", zap.Error(dbStorageErr))
+	}
+
+	defer dbStorage.Close()
+
 	fileStorage, fileStorageErr := repository.NewFileStorage(
 		repository.FileStorageConfig{
 			FilePath:      config.FileStoragePath,
@@ -57,6 +70,7 @@ func main() {
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
+	router.Get("/ping", controller.GetPing(dbStorage))
 
 	logger.Info("Server listening", zap.String("address", config.ServerAddress))
 
