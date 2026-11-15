@@ -17,6 +17,9 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
 	github.com/knadh/koanf/parsers/yaml v1.1.0 // indirect
@@ -50,6 +53,7 @@ require (
 
 require (
 	github.com/google/renameio v1.0.1
+	github.com/jackc/pgx/v5 v5.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/objx v0.5.3 // indirect
 	go.uber.org/zap v1.28.0

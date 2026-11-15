@@ -8,4 +8,5 @@ type Config struct {
 	StoreIntervalInt int    `env:"STORE_INTERVAL"`
 	FileStoragePath  string `env:"FILE_STORAGE_PATH"`
 	Restore          bool   `env:"RESTORE"`
+	DatabaseDsn      string `env:"DATABASE_DSN"`
 }

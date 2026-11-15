@@ -23,6 +23,7 @@ func NewConfig(logger *logs.Logger) *Config {
 	flag.IntVar(&cfg.StoreIntervalInt, "i", 300, "Интервал времени в секундах, по истечении которого текущие показания сервера сохраняются на диск")
 	flag.StringVar(&cfg.FileStoragePath, "f", "./temp.txt", "Путь до файла, куда сохраняются текущие значения")
 	flag.BoolVar(&cfg.Restore, "r", false, "Следует ли загружать ранее сохранённые значения из указанного файла при старте сервера?")
+	flag.StringVar(&cfg.DatabaseDsn, "d", "", "Строка подключения к базе данных")
 	flag.Parse()
 
 	err := env.Parse(cfg)
