@@ -9,23 +9,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type PostgreSqlStorageConfig struct {
+type PostgreSQLStorageConfig struct {
 	Dsn string
 }
 
-type PostgreSqlStorage struct {
-	config PostgreSqlStorageConfig
+type PostgreSQLStorage struct {
+	config PostgreSQLStorageConfig
 	logger *logs.Logger
 	db     *sql.DB
 }
 
-func NewPostgreSqlStorage(config PostgreSqlStorageConfig, logger *logs.Logger) (*PostgreSqlStorage, error) {
+func NewPostgreSQLStorage(config PostgreSQLStorageConfig, logger *logs.Logger) (*PostgreSQLStorage, error) {
 	db, err := sql.Open("pgx", config.Dsn)
 	if err != nil {
 		logger.Fatal("Failed to open DB", zap.Error(err))
 	}
 
-	storage := &PostgreSqlStorage{
+	storage := &PostgreSQLStorage{
 		config: config,
 		logger: logger,
 		db:     db,
@@ -34,5 +34,5 @@ func NewPostgreSqlStorage(config PostgreSqlStorageConfig, logger *logs.Logger) (
 	return storage, nil
 }
 
-func (s *PostgreSqlStorage) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
-func (s *PostgreSqlStorage) Close() error                   { return s.db.Close() }
+func (s *PostgreSQLStorage) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
+func (s *PostgreSQLStorage) Close() error                   { return s.db.Close() }

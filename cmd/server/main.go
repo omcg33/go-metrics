@@ -27,8 +27,8 @@ func main() {
 
 	config := config.NewConfig(logger)
 	storage := repository.NewMemStorage()
-	dbStorage, dbStorageErr := repository.NewPostgreSqlStorage(
-		repository.PostgreSqlStorageConfig{
+	dbStorage, dbStorageErr := repository.NewPostgreSQLStorage(
+		repository.PostgreSQLStorageConfig{
 			Dsn: config.DatabaseDsn,
 		},
 		logger,
