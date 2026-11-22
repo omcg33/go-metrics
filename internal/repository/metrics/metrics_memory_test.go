@@ -4,29 +4,34 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
+func newMemRepo() *MetricsMemoryRepository {
+	return NewMetricsMemoryRepository(zap.NewNop())
+}
+
 func TestNewMemStorage_NotNil(t *testing.T) {
-	assert.NotNil(t, NewMemStorage())
+	assert.NotNil(t, newMemRepo())
 }
 
 func TestNewMemStorage_GaugesEmpty(t *testing.T) {
-	assert.Empty(t, NewMemStorage().Gauges())
+	assert.Empty(t, newMemRepo().Gauges())
 }
 
 func TestNewMemStorage_CountersEmpty(t *testing.T) {
-	assert.Empty(t, NewMemStorage().Counters())
+	assert.Empty(t, newMemRepo().Counters())
 }
 
 func TestUpdateGauge_SetsValue(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateGauge("Alloc", 1.5)
 
 	assert.Equal(t, 1.5, s.Gauges()["Alloc"])
 }
 
 func TestUpdateGauge_OverwritesValue(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateGauge("Alloc", 1.5)
 	s.UpdateGauge("Alloc", 2.5)
 
@@ -34,14 +39,14 @@ func TestUpdateGauge_OverwritesValue(t *testing.T) {
 }
 
 func TestUpdateCounter_AddsDelta(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateCounter("PollCount", 10)
 
 	assert.Equal(t, int64(10), s.Counters()["PollCount"])
 }
 
 func TestUpdateCounter_Increments(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateCounter("PollCount", 10)
 	s.UpdateCounter("PollCount", 5)
 
@@ -49,7 +54,7 @@ func TestUpdateCounter_Increments(t *testing.T) {
 }
 
 func TestGauges_ReturnsAll(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateGauge("Alloc", 1)
 	s.UpdateGauge("Sys", 2)
 
@@ -57,7 +62,7 @@ func TestGauges_ReturnsAll(t *testing.T) {
 }
 
 func TestCounters_ReturnsAll(t *testing.T) {
-	s := NewMemStorage()
+	s := newMemRepo()
 	s.UpdateCounter("PollCount", 1)
 	s.UpdateCounter("Custom", 2)
 

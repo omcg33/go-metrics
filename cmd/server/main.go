@@ -13,7 +13,7 @@ import (
 	"github.com/omcg33/go-metrics/internal/handler"
 	logs "github.com/omcg33/go-metrics/internal/logger"
 	"github.com/omcg33/go-metrics/internal/middleware"
-	"github.com/omcg33/go-metrics/internal/repository"
+	repository "github.com/omcg33/go-metrics/internal/repository/metrics"
 	"github.com/omcg33/go-metrics/internal/service"
 )
 
@@ -26,24 +26,25 @@ func main() {
 	defer logger.Sync()
 
 	config := config.NewConfig(logger)
-	storage := repository.NewMemStorage()
-	fileStorage, fileStorageErr := repository.NewFileStorage(
-		repository.FileStorageConfig{
-			FilePath:      config.FileStoragePath,
-			Restore:       config.Restore,
-			StoreInterval: config.StoreInterval,
-		},
-		storage,
-		logger,
-	)
-	svc := service.NewService(fileStorage)
+
+	metricsRepository, err := repository.NewMetricsRepository(config, logger)
+
+	if err != nil {
+		logger.Error("Failed to init MetricsRepository", zap.Error(err))
+		return
+	}
+	defer func() {
+		if err := metricsRepository.Close(); err != nil {
+			logger.Error("Failed to close metrics repository", zap.Error(err))
+		}
+	}()
+
+	svc := service.NewService(metricsRepository)
 	controller := handler.NewController(svc)
 
-	if fileStorageErr != nil {
-		logger.Fatal("Failed to init FileStorage", zap.Error(fileStorageErr))
+	if runner, ok := metricsRepository.(repository.Runner); ok {
+		go runner.Run()
 	}
-
-	go fileStorage.AutoSave()
 
 	router := chi.NewRouter()
 
@@ -57,12 +58,14 @@ func main() {
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
+	router.Get("/ping", controller.GetPing(metricsRepository))
 
 	logger.Info("Server listening", zap.String("address", config.ServerAddress))
 
-	err := http.ListenAndServe(config.ServerAddress, router)
+	errServerInit := http.ListenAndServe(config.ServerAddress, router)
 
-	if err != nil {
-		logger.Fatal("Server failed", zap.Error(err))
+	if errServerInit != nil {
+		logger.Error("Server failed", zap.Error(errServerInit))
+		return
 	}
 }
