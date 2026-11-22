@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	logs "github.com/omcg33/go-metrics/internal/logger"
-	"go.uber.org/zap"
+	"github.com/omcg33/go-metrics/internal/migrations"
 )
 
 var _ MetricsRepository = (*MetricsPostgressRepository)(nil)
@@ -22,9 +22,13 @@ type MetricsPostgressRepository struct {
 }
 
 func NewMetricsPostgressRepository(config MetricsPostgressRepositoryConfig, logger *logs.Logger) (*MetricsPostgressRepository, error) {
+	if err := migrations.Up(config.Dsn); err != nil {
+		return nil, err
+	}
+
 	db, err := sql.Open("pgx", config.Dsn)
 	if err != nil {
-		logger.Fatal("Failed to open DB", zap.Error(err))
+		return nil, err
 	}
 
 	storage := &MetricsPostgressRepository{
@@ -36,7 +40,7 @@ func NewMetricsPostgressRepository(config MetricsPostgressRepositoryConfig, logg
 	return storage, nil
 }
 
-// shortcut: no SQL yet, replace before relying on DATABASE_DSN
+// shortcut: rows are not stored yet, replace before relying on DATABASE_DSN for metrics
 func (s *MetricsPostgressRepository) UpdateGauge(string, float64) error { return nil }
 func (s *MetricsPostgressRepository) UpdateCounter(string, int64) error { return nil }
 func (s *MetricsPostgressRepository) Gauges() map[string]float64        { return map[string]float64{} }
