@@ -58,7 +58,7 @@ func main() {
 	router.Post("/update/{type}/{name}/{value}", controller.CreateOrUpdateMetric)
 	router.Get("/value/{type}/{name}", controller.GetMetric)
 	router.Get("/", controller.GetMetrics)
-	// router.Get("/ping", controller.GetPing(dbStorage))
+	router.Get("/ping", controller.GetPing(metricsRepository))
 
 	logger.Info("Server listening", zap.String("address", config.ServerAddress))
 

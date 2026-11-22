@@ -6,12 +6,19 @@ import (
 	"time"
 )
 
-func (controller *Controller) GetPing(dbStorage DBStorage) http.HandlerFunc {
+func (controller *Controller) GetPing(repository any) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx, cancel := context.WithTimeout(req.Context(), time.Second)
 		defer cancel()
 
-		err := dbStorage.Ping(ctx)
+		pinger, ok := repository.(interface{ Ping(context.Context) error })
+
+		if !ok {
+			res.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err := pinger.Ping(ctx)
 
 		if err != nil {
 			res.WriteHeader(http.StatusInternalServerError)
