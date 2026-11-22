@@ -3,20 +3,26 @@ package repository
 import (
 	"maps"
 	"sync"
+
+	logs "github.com/omcg33/go-metrics/internal/logger"
 )
 
 var _ MetricsRepository = (*MetricsMemoryRepository)(nil)
 
 type MetricsMemoryRepository struct {
+	logger   *logs.Logger
 	mu       sync.RWMutex
 	gauges   map[string]float64
 	counters map[string]int64
 }
 
-func NewMetricsMemoryRepository() *MetricsMemoryRepository {
+func NewMetricsMemoryRepository(logger *logs.Logger) *MetricsMemoryRepository {
+	logger.Info("MetricsMemoryRepository initialized")
+
 	return &MetricsMemoryRepository{
 		gauges:   make(map[string]float64),
 		counters: make(map[string]int64),
+		logger:   logger,
 	}
 }
 

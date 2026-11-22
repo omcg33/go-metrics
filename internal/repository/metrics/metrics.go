@@ -15,11 +15,15 @@ type factory struct {
 func NewMetricsRepository(cfg *config.Config, logger *logs.Logger) (MetricsRepository, error) {
 	factories := []factory{
 		{
-			match: func(c *config.Config) bool { return c.DatabaseDsn != "" },
+			match: func(c *config.Config) bool {
+				return c.DatabaseDsn != ""
+			},
 			build: buildPostgresRepository,
 		},
 		{
-			match: func(c *config.Config) bool { return c.FileStoragePath != "" },
+			match: func(c *config.Config) bool {
+				return c.FileStoragePath != ""
+			},
 			build: buildFileRepository,
 		},
 		{
@@ -51,11 +55,11 @@ func buildFileRepository(cfg *config.Config, logger *logs.Logger) (MetricsReposi
 			Restore:       cfg.Restore,
 			StoreInterval: cfg.StoreInterval,
 		},
-		NewMetricsMemoryRepository(),
+		NewMetricsMemoryRepository(logger),
 		logger,
 	)
 }
 
-func buildMemoryRepository(*config.Config, *logs.Logger) (MetricsRepository, error) {
-	return NewMetricsMemoryRepository(), nil
+func buildMemoryRepository(cfg *config.Config, logger *logs.Logger) (MetricsRepository, error) {
+	return NewMetricsMemoryRepository(logger), nil
 }

@@ -36,6 +36,8 @@ func NewMetricsFileRepository(config MetricsFileRepositoryConfig, storage *Metri
 		logger:  logger,
 	}
 
+	logger.Info("MetricsFileRepository initialized")
+
 	if f.config.Restore {
 		err := f.restore()
 

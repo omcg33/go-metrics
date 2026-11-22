@@ -37,6 +37,7 @@ func NewMetricsPostgressRepository(config MetricsPostgressRepositoryConfig, logg
 		db:     db,
 	}
 
+	logger.Info("MetricsPostgressRepository initialized")
 	return storage, nil
 }
 
