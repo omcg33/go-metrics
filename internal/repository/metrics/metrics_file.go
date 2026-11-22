@@ -11,20 +11,26 @@ import (
 	"go.uber.org/zap"
 )
 
-type FileStorageConfig struct {
+var _ MetricsRepository = (*MetricsFileRepository)(nil)
+
+type Runner interface {
+	Run()
+}
+
+type MetricsFileRepositoryConfig struct {
 	StoreInterval time.Duration
 	Restore       bool
 	FilePath      string
 }
 
-type FileStorage struct {
-	config  FileStorageConfig
-	storage *MemStorage
+type MetricsFileRepository struct {
+	config  MetricsFileRepositoryConfig
+	storage *MetricsMemoryRepository
 	logger  *logs.Logger
 }
 
-func NewFileStorage(config FileStorageConfig, storage *MemStorage, logger *logs.Logger) (*FileStorage, error) {
-	f := &FileStorage{
+func NewMetricsFileRepository(config MetricsFileRepositoryConfig, storage *MetricsMemoryRepository, logger *logs.Logger) (*MetricsFileRepository, error) {
+	f := &MetricsFileRepository{
 		config:  config,
 		storage: storage,
 		logger:  logger,
@@ -41,7 +47,7 @@ func NewFileStorage(config FileStorageConfig, storage *MemStorage, logger *logs.
 	return f, nil
 }
 
-func (f *FileStorage) restore() error {
+func (f *MetricsFileRepository) restore() error {
 	data, err := os.ReadFile(f.config.FilePath)
 
 	if err != nil {
@@ -69,7 +75,7 @@ func (f *FileStorage) restore() error {
 	return nil
 }
 
-func (f *FileStorage) save() error {
+func (f *MetricsFileRepository) save() error {
 	gauges := f.storage.Gauges()
 	counters := f.storage.Counters()
 	metrics := make([]models.Metrics, 0, len(gauges)+len(counters))
@@ -92,7 +98,7 @@ func (f *FileStorage) save() error {
 	return renameio.WriteFile(f.config.FilePath, data, 0666)
 }
 
-func (f *FileStorage) AutoSave() {
+func (f *MetricsFileRepository) AutoSave() {
 	if f.config.StoreInterval == 0 {
 		return
 	}
@@ -106,7 +112,9 @@ func (f *FileStorage) AutoSave() {
 	}
 }
 
-func (f *FileStorage) UpdateGauge(name string, value float64) error {
+func (f *MetricsFileRepository) Run() { f.AutoSave() }
+
+func (f *MetricsFileRepository) UpdateGauge(name string, value float64) error {
 	f.storage.UpdateGauge(name, value)
 
 	if f.config.StoreInterval == 0 {
@@ -121,7 +129,7 @@ func (f *FileStorage) UpdateGauge(name string, value float64) error {
 	return nil
 }
 
-func (f *FileStorage) UpdateCounter(name string, delta int64) error {
+func (f *MetricsFileRepository) UpdateCounter(name string, delta int64) error {
 	f.storage.UpdateCounter(name, delta)
 
 	if f.config.StoreInterval == 0 {
@@ -136,10 +144,16 @@ func (f *FileStorage) UpdateCounter(name string, delta int64) error {
 	return nil
 }
 
-func (f *FileStorage) Gauges() map[string]float64 {
+func (f *MetricsFileRepository) Gauges() map[string]float64 {
 	return f.storage.Gauges()
 }
 
-func (f *FileStorage) Counters() map[string]int64 {
+func (f *MetricsFileRepository) Counters() map[string]int64 {
 	return f.storage.Counters()
+}
+
+func (f *MetricsFileRepository) Close() error {
+	err := f.save()
+
+	return err
 }

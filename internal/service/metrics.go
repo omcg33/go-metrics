@@ -1,10 +1,10 @@
 package service
 
 type MetricsService struct {
-	repository Storage
+	repository MetricsRepository
 }
 
-func NewService(repository Storage) *MetricsService {
+func NewService(repository MetricsRepository) *MetricsService {
 	return &MetricsService{repository: repository}
 }
 
@@ -34,7 +34,6 @@ func (s *MetricsService) Metrics() map[string]interface{} {
 
 	metrics["gauges"] = gauges
 	metrics["counters"] = counters
-	
-	
+
 	return metrics
 }

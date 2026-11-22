@@ -7,31 +7,31 @@ import (
 )
 
 func TestNewService_NotNil(t *testing.T) {
-	assert.NotNil(t, NewService(NewMockStorage(t)))
+	assert.NotNil(t, NewService(NewMockMetricsRepository(t)))
 }
 
 func TestNewService_SetsRepository(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 
 	assert.Equal(t, repo, NewService(repo).repository)
 }
 
 func TestCreateOrUpdateGauge(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().UpdateGauge("Alloc", 1.5).Return(nil)
 
 	NewService(repo).CreateOrUpdateGauge("Alloc", 1.5)
 }
 
 func TestCreateOrUpdateCounter(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().UpdateCounter("PollCount", int64(10)).Return(nil)
 
 	NewService(repo).CreateOrUpdateCounter("PollCount", 10)
 }
 
 func TestMetrics_Gauges(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	gauges := map[string]float64{"Alloc": 1.5}
 	repo.EXPECT().Gauges().Return(gauges)
 	repo.EXPECT().Counters().Return(map[string]int64{})
@@ -42,7 +42,7 @@ func TestMetrics_Gauges(t *testing.T) {
 }
 
 func TestMetrics_Counters(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	counters := map[string]int64{"PollCount": 10}
 	repo.EXPECT().Gauges().Return(map[string]float64{})
 	repo.EXPECT().Counters().Return(counters)
@@ -53,7 +53,7 @@ func TestMetrics_Counters(t *testing.T) {
 }
 
 func TestGauge(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().Gauges().Return(map[string]float64{"Alloc": 1.5})
 
 	got, ok := NewService(repo).Gauge("Alloc")
@@ -62,7 +62,7 @@ func TestGauge(t *testing.T) {
 }
 
 func TestGauge_NotFound(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().Gauges().Return(map[string]float64{})
 
 	_, ok := NewService(repo).Gauge("Alloc")
@@ -71,7 +71,7 @@ func TestGauge_NotFound(t *testing.T) {
 }
 
 func TestCounter(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().Counters().Return(map[string]int64{"PollCount": 10})
 
 	got, ok := NewService(repo).Counter("PollCount")
@@ -80,7 +80,7 @@ func TestCounter(t *testing.T) {
 }
 
 func TestCounter_NotFound(t *testing.T) {
-	repo := NewMockStorage(t)
+	repo := NewMockMetricsRepository(t)
 	repo.EXPECT().Counters().Return(map[string]int64{})
 
 	_, ok := NewService(repo).Counter("PollCount")
