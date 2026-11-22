@@ -46,6 +46,6 @@ func (s *MetricsMemoryRepository) Counters() map[string]int64 {
 	return maps.Clone(s.counters)
 }
 
-func (f *MetricsMemoryRepository) Close() error {
+func (s *MetricsMemoryRepository) Close() error {
 	return nil
 }
